@@ -16,10 +16,11 @@ private:
 public:
 	Device() : mWidth(800), mHeight(600), mDrawBoard(NULL), mFrameBuffer(NULL){}
 	Device(int width, int height) :mWidth(width), mHeight(height), mDrawBoard(NULL), mFrameBuffer(NULL) {}
-	~Device() { delete mDrawBoard; }
+	~Device() { }
 	inline DrawBoard* GetDrawBoard() { return mDrawBoard; }
 	void Init(int w, int h);
+	void ClearBuffer();
 	void Close();
-	void DrawPoint(const Vertex& point);
-	void DrawLine(const Vertex& start, const Vertex& end);
+	void DrawPoint(const Vector3& point, const Color& color);
+	void DrawLineDDA(const Vertex& start, const Vertex& end);
 };

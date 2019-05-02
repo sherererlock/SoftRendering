@@ -20,7 +20,7 @@ public:
 	DrawBoard(int w, int h):
 		mHWnd(NULL), mCompatibleDC(NULL), mBitMap(NULL), mOldBitMap(NULL), mWidth(w), mHeight(h) {}
 	~DrawBoard() {}
-	inline bool IsKeyDown() { return false; }
+	bool IsKeyDown(int key);
 	inline LPVOID GetFramebuffer() { return mFrameBuffer; }
 	void Init(int w, int h);
 	void Dispatch();
