@@ -1,8 +1,9 @@
 
-#include"Device.h"
-#include"DrawBoard.h"
 #include<math.h>
 #include<iostream>
+#include"Device.h"
+#include"DrawBoard.h"
+#include"Stream.h"
 
 #define Round(x) (int((x)+0.5f))
 
@@ -17,6 +18,15 @@ void Device::Init(int w, int h)
 
 	for (int i = 0; i < h; i++)
 		mFrameBuffer[i] = fb + i * w;
+
+	mCamera.mEye = Vector3(-5.0f, 50.0f, -5.0f);
+	mCamera.mLook = Vector3(50.0f, 50.0f, 50.0f);
+	mCamera.mUp	= Vector3(0.0f, 100.0f, 0.0f);
+
+	mTransform = new Transform();
+	mTransform->SetView(mCamera);
+	mTransform->Init(w, h);
+	mTransform->UpdateTransform();
 }
 
 void Device::ClearBuffer()
@@ -40,6 +50,7 @@ void Device::Close()
 		mDrawBoard->Close();
 
 	delete mDrawBoard;
+	delete mTransform;
 }
 
 void Device::DrawPoint(const Vector3& point, const Color& color)
@@ -55,10 +66,26 @@ void Device::DrawPoint(const Vector3& point, const Color& color)
 	mFrameBuffer[y][x] = r << 16 | g << 8 | b;
 }
 
+void Device::DrawPoint3D(const Vector3& point, const Color& color)
+{
+	Vector4 v;
+	mTransform->ApplyTransform(v, Vector4(point.x, point.y, point.z, 1.0f));
+	mTransform->Homogenize(v);
+
+	//Stream::PrintVector3(Vector3(v.x, v.y, v.z), "3dpoint");
+	DrawPoint(Vector3(v.x, v.y, v.z), color);
+}
+
 void Device::DrawLineDDA(const Vertex& start, const Vertex& end)
 {
-	Vector3 sp = start.mPos;
-	Vector3 ep = end.mPos;
+	Vector4 sp = start.mPos;
+	mTransform->ApplyTransform(sp, start.mPos);
+	mTransform->Homogenize(sp);
+
+	Vector4 ep = end.mPos;
+	mTransform->ApplyTransform(ep, start.mPos);
+	mTransform->Homogenize(ep);
+
 	Color sc = start.mColor;
 	Color ec = end.mColor;
 
@@ -135,4 +162,11 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end)
 				break;
 		}
 	}
+}
+
+void Device::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
+{
+	DrawLineDDA(v1, v2);
+	DrawLineDDA(v3, v2);
+	DrawLineDDA(v1, v3);
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include"Vector.h"
 
 class Matrix3D
 {
@@ -137,65 +138,12 @@ public:
 
 	static void Multiply(const Matrix4D& mat1, const Matrix4D& mat2, Matrix4D& mat)
 	{
-	#if 0
-		for (int i = 0; i < 4; i ++)
+		for (int i = 0; i < 4; i++)
 		{
-			for(int j = 0; j < 4; j ++)
+			for (int j = 0; j < 4; j++)
 				mat[i][j] = mat1[i][0] * mat2[0][j] + mat1[i][1] * mat2[1][j] + mat1[i][2] * mat2[2][j] +
-				mat1[i][3] * mat2[3][j]
+				mat1[i][3] * mat2[3][j];
 		}
-	#else
-		// A restric qualified pointer (or reference) is basically a promise
-		// to the compiler that for the scope of the pointer, the target of the
-		// pointer will only be accessed through that pointer (and pointers
-		// copied from it.
-		const float* __restrict ap = &mat1.mMat[0][0];
-		const float* __restrict bp = &mat2.mMat[0][0];
-		float* __restrict cp = &mat.mMat[0][0];
-
-		float a0, a1, a2, a3;
-
-		a0 = ap[0];
-		a1 = ap[1];
-		a2 = ap[2];
-		a3 = ap[3];
-
-		cp[0] = a0 * bp[0] + a1 * bp[4] + a2 * bp[8] + a3 * bp[12];
-		cp[1] = a0 * bp[1] + a1 * bp[5] + a2 * bp[9] + a3 * bp[13];
-		cp[2] = a0 * bp[2] + a1 * bp[6] + a2 * bp[10] + a3 * bp[14];
-		cp[3] = a0 * bp[3] + a1 * bp[7] + a2 * bp[11] + a3 * bp[15];
-
-		a0 = ap[4];
-		a1 = ap[5];
-		a2 = ap[6];
-		a3 = ap[7];
-
-		cp[4] = a0 * bp[0] + a1 * bp[4] + a2 * bp[8] + a3 * bp[12];
-		cp[5] = a0 * bp[1] + a1 * bp[5] + a2 * bp[9] + a3 * bp[13];
-		cp[6] = a0 * bp[2] + a1 * bp[6] + a2 * bp[10] + a3 * bp[14];
-		cp[7] = a0 * bp[3] + a1 * bp[7] + a2 * bp[11] + a3 * bp[15];
-
-		a0 = ap[8];
-		a1 = ap[9];
-		a2 = ap[10];
-		a3 = ap[11];
-
-		cp[8] = a0 * bp[0] + a1 * bp[4] + a2 * bp[8] + a3 * bp[12];
-		cp[9] = a0 * bp[1] + a1 * bp[5] + a2 * bp[9] + a3 * bp[13];
-		cp[10] = a0 * bp[2] + a1 * bp[6] + a2 * bp[10] + a3 * bp[14];
-		cp[11] = a0 * bp[3] + a1 * bp[7] + a2 * bp[11] + a3 * bp[15];
-
-		a0 = ap[12];
-		a1 = ap[13];
-		a2 = ap[14];
-		a3 = ap[15];
-
-		cp[12] = a0 * bp[0] + a1 * bp[4] + a2 * bp[8] + a3 * bp[12];
-		cp[13] = a0 * bp[1] + a1 * bp[5] + a2 * bp[9] + a3 * bp[13];
-		cp[14] = a0 * bp[2] + a1 * bp[6] + a2 * bp[10] + a3 * bp[14];
-		cp[15] = a0 * bp[3] + a1 * bp[7] + a2 * bp[11] + a3 * bp[15];
-
-	#endif
 	}
 
 	Matrix4D transpose() const
@@ -238,5 +186,13 @@ public:
 		mMat[0][2] = mMat[1][2] = mMat[3][2] = mMat[0][3] = mMat[1][3] = mMat[2][3] = 0.0F;
 
 		return (*this);
+	}
+
+	static void VectorMul(Vector4& vout, const Vector4& v, const Matrix4D& m)
+	{
+		vout = (Vector4(m.mMat[0][0] * v.x + m.mMat[1][0] * v.y + m.mMat[2][0] * v.z + m.mMat[3][0] * v.w,
+			m.mMat[0][1] * v.x + m.mMat[1][1] * v.y + m.mMat[2][1] * v.z + m.mMat[3][1] * v.w,
+			m.mMat[0][2] * v.x + m.mMat[1][2] * v.y + m.mMat[2][2] * v.z + m.mMat[3][2] * v.w,
+			m.mMat[0][3] * v.x + m.mMat[1][3] * v.y + m.mMat[2][3] * v.z + m.mMat[3][3] * v.w));
 	}
 };

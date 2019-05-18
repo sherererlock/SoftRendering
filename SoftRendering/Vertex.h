@@ -5,12 +5,17 @@
 class Vertex
 {
 public:
-	Vector3 mPos;
-	Vector3 mNormal;
+	Vector4 mPos;
+	Vector4 mNormal;
 	Color	mColor;
 
 public:
 	Vertex() {} 
-	Vertex(Vector3 pos, Vector3 normal, Color color) :
+	Vertex(Vector4 pos, Vector4 normal, Color color) :
 		mPos(pos), mNormal(normal), mColor(color) {}
+};
+
+struct Triangle
+{
+
 };

@@ -120,6 +120,8 @@
     <ClInclude Include="Device.h" />
     <ClInclude Include="header.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="Stream.h" />
+    <ClInclude Include="Transform.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="DrawBoard.h" />
@@ -128,7 +130,9 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="DrawBoard.cpp" />
+    <ClCompile Include="Stream.cpp" />
     <ClCompile Include="softrendering.cpp" />
+    <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

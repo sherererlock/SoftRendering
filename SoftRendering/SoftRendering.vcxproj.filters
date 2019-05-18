@@ -22,6 +22,9 @@
     <Filter Include="Window">
       <UniqueIdentifier>{8ad8b098-5937-4fbf-a1a5-39ba4dd026bb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="stream">
+      <UniqueIdentifier>{241650a6-09e3-47f7-b12e-e480bc195a21}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector.h">
@@ -48,6 +51,12 @@
     <ClInclude Include="Device.h">
       <Filter>Window</Filter>
     </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Stream.h">
+      <Filter>stream</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -61,6 +70,12 @@
     </ClCompile>
     <ClCompile Include="softrendering.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Stream.cpp">
+      <Filter>stream</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

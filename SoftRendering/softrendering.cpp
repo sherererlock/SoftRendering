@@ -2,9 +2,23 @@
 #include<iostream>
 #include"Device.h"
 
+Device* device = NULL;
+
+void DrawTriangle()
+{
+	Vertex v1, v2, v3;
+	v1.mPos = Vector4( 100.0f, 0.0f, 0.0f, 1.0f );
+	v1.mColor = Color( 255.0f, 0.0f, 0.0f, 1.0f );
+	v2.mPos = Vector4( 0.0f, 0.0f, 100.0f, 1.0f );
+	v2.mColor = Color( 0.0f, 255.0f, 0.0f, 1.0f );
+	v3.mPos = Vector4( 50.0f, 100.0f, 50.0f, 1.0f );
+	v3.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
+	device->DrawTriangle(v1, v2, v3);
+}
+
 int main()
 {
-	Device* device = new Device();
+	device = new Device();
 	device->Init(800, 600);
 	Vertex startp;
 	startp.mColor = Color(255.0f, 0.0f, 0.0f, 255.0f);
@@ -14,21 +28,12 @@ int main()
 	float y = 450.5f;
 	while (true)
 	{
-		//for (int i =0; i< 100; i ++)
-		//	device->DrawPoint(Vector3(102.5f, i, 0), Color(255, 0, 0, 1));
-
 		if (device->GetDrawBoard( )->IsKeyDown(VK_ESCAPE))
 			break;
 
 		device->ClearBuffer();
 
-		//device->DrawLineDDA(startp, endp);
-
-		startp.mPos = Vector3(350.0f, 350.0f, 0);
-		endp.mPos = Vector3(450.5f, y, 0);
-		device->DrawLineDDA(startp, endp);
-		if (y > 0.0f)
-			y -= 0.5f;
+		DrawTriangle();
 
 		device->GetDrawBoard()->Update();
 	}

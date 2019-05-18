@@ -117,7 +117,7 @@ public:
 
 	inline float Length( ) const
 	{
-		return	::sqrt( x * x + y * y + z * z + w * w );
+		return	(float)::sqrt( x * x + y * y + z * z + w * w );
 	}
 
 	inline Vector4& Normorlize()
