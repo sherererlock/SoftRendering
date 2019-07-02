@@ -54,7 +54,7 @@ void DrawBoard::Init(int w, int h)
 
 	assert(mHWnd);
 
-	BITMAPINFO bitmap = { { sizeof(BITMAPINFOHEADER), mWidth, mHeight, 1, 32, BI_RGB,
+	BITMAPINFO bitmap = { { sizeof(BITMAPINFOHEADER), mWidth, -mHeight, 1, 32, BI_RGB,
 		mWidth * mHeight * 4, 0, 0, 0, 0 } };
 	RECT rect = { 0, 0, w, h };
 

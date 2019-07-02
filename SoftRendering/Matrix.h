@@ -188,11 +188,12 @@ public:
 		return (*this);
 	}
 
-	static void VectorMul(Vector4& vout, const Vector4& v, const Matrix4D& m)
+	static void MulRight(Vector4& vout, const Vector4& vin, const Matrix4D& m)
 	{
-		vout = (Vector4(m.mMat[0][0] * v.x + m.mMat[1][0] * v.y + m.mMat[2][0] * v.z + m.mMat[3][0] * v.w,
-			m.mMat[0][1] * v.x + m.mMat[1][1] * v.y + m.mMat[2][1] * v.z + m.mMat[3][1] * v.w,
-			m.mMat[0][2] * v.x + m.mMat[1][2] * v.y + m.mMat[2][2] * v.z + m.mMat[3][2] * v.w,
-			m.mMat[0][3] * v.x + m.mMat[1][3] * v.y + m.mMat[2][3] * v.z + m.mMat[3][3] * v.w));
+		float x = vin.x, y = vin.y, z = vin.z, w = vin.w;
+		vout.x = x * m.mMat[0][0] + y * m.mMat[1][0] + z * m.mMat[2][0] + w * m.mMat[3][0];
+		vout.y = x * m.mMat[0][1] + y * m.mMat[1][1] + z * m.mMat[2][1] + w * m.mMat[3][1];
+		vout.z = x * m.mMat[0][2] + y * m.mMat[1][2] + z * m.mMat[2][2] + w * m.mMat[3][2];
+		vout.w = x * m.mMat[0][3] + y * m.mMat[1][3] + z * m.mMat[2][3] + w * m.mMat[3][3];
 	}
 };

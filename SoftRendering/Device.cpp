@@ -83,7 +83,7 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end)
 	mTransform->Homogenize(sp);
 
 	Vector4 ep = end.mPos;
-	mTransform->ApplyTransform(ep, start.mPos);
+	mTransform->ApplyTransform(ep, end.mPos);
 	mTransform->Homogenize(ep);
 
 	Color sc = start.mColor;

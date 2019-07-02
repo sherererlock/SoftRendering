@@ -25,8 +25,8 @@ void Transform::SetPerspective(float fov, float aspect, float znear, float zfar)
 	mProject = Matrix4D(
 		cot / aspect, 0.0f, 0.0f, 0.0f,
 		0.0f, cot, 0.0f, 0.0f,
-		0.0f, 0.0f, zfar * fsubn, - znear * zfar * fsubn,
-		0.0f, 0.0f, 1.0f, 0.0f
+		0.0f, 0.0f, zfar * fsubn, 1.0f,
+		0.0f, 0.0f, -znear * zfar * fsubn, 0.0f
 	);
 }
 
@@ -35,21 +35,18 @@ void Transform::UpdateTransform()
 	Matrix4D tmp;
 	Matrix4D::Multiply(mWorld, mView, tmp);
 
-	Stream::PrintMatrix4D(tmp.transpose(), "tmp");
+	Stream::PrintMatrix4D(tmp, "tmp");
 
 	Matrix4D::Multiply(tmp, mProject, mWVP);
 
-	Matrix4D mvp = mWVP.transpose();
-	Matrix4D view = mView.transpose();
-	Matrix4D project = mProject.transpose();
-	Stream::PrintMatrix4D(view, "mView");
-	Stream::PrintMatrix4D(project, "mProject");
-	Stream::PrintMatrix4D(mvp, "WVP");
+	Stream::PrintMatrix4D(mView, "mView");
+	Stream::PrintMatrix4D(mProject, "mProject");
+	Stream::PrintMatrix4D(mWVP, "WVP");
 }
 
 void Transform::ApplyTransform(Vector4& vout, const Vector4& vin)
 {
-	Matrix4D::VectorMul(vout, vin, mWVP);
+	Matrix4D::MulRight(vout, vin, mWVP);
 }
 
 //归一化得到屏幕坐标

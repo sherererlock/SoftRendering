@@ -25,12 +25,6 @@ public:
 		return *this;
 	}
 
-
-	inline float Dot( const Vector2& v )
-	{
-		return x * v.x + y * v.y;
-	}
-
 	Vector2 operator + ( const Vector2& v ) const
 	{
 		return Vector2( x + v.x, y + v.y );
@@ -44,6 +38,16 @@ public:
 	Vector2 operator * ( const Vector2& v ) const
 	{
 		return Vector2( x * v.x, y * v.y );
+	}
+
+	inline static float Dot(const Vector2& v1, const Vector2& v2)
+	{
+		return v1.x * v2.x + v1.y * v2.y;
+	}
+
+	inline static float Cross(const Vector2& v1, const Vector2& v2)
+	{
+		return v1.x * v2.y - v1.y * v2.x;
 	}
 };
 
@@ -72,20 +76,6 @@ public:
 		return *this;
 	}
 
-	inline float Dot( const Vector3& v )
-	{
-		return x * v.x + y * v.y + z * v.z;
-	}
-
-	inline Vector3 Cross(const Vector3& v) const
-	{
-		return Vector3(
-			y * v.z - z * v.y,
-			z * v.x - x * v.z,
-			x * v.y - y * v.x
-		);
-	}
-
 	Vector3 operator + (const Vector3& v) const
 	{
 		return Vector3(x + v.x, y + v.y, z + v.z);
@@ -99,6 +89,16 @@ public:
 	Vector3 operator * (const Vector3& v) const
 	{
 		return Vector3(x * v.x, y * v.y, z * v.z);
+	}
+
+	inline static float Dot(const Vector3& v1, const Vector3& v2)
+	{
+		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+	}
+
+	inline static Vector3 Cross(const Vector3& v1, const Vector3& v2)
+	{
+		return Vector3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
 	}
 };
 
@@ -141,5 +141,15 @@ public:
 	Vector4 operator * ( const Vector4& v ) const
 	{
 		return Vector4( x * v.x, y * v.y, z * v.z, w * v.w );
+	}
+
+	inline static float Dot(const Vector3& v1, const Vector3& v2)
+	{
+		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+	}
+
+	inline static Vector4 Cross(const Vector4& v1, const Vector4& v2)
+	{
+		return Vector4(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x, 1.0f);
 	}
 };
