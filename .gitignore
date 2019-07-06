@@ -61,3 +61,8 @@ SoftRendering/x64/Debug/SoftRendering.unsuccessfulbuild
 SoftRendering/x64/Debug/SoftRendering.tlog/SoftRendering.lastbuildstate
 SoftRendering/x64/Debug/SoftRendering.tlog/link.write.1.tlog
 *.vcxproj
+SoftRendering/SoftRendering.vcxproj
+*.obj
+*.filters
+*.filters
+*.ipch

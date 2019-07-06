@@ -143,7 +143,12 @@ public:
 		return Vector4( x * v.x, y * v.y, z * v.z, w * v.w );
 	}
 
-	inline static float Dot(const Vector3& v1, const Vector3& v2)
+	Vector4 operator / (float n) const
+	{
+		return Vector4(x / n, y / n, z / n, w / n);
+	}
+
+	inline static float Dot(const Vector4& v1, const Vector4& v2)
 	{
 		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 	}

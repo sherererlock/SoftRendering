@@ -57,6 +57,9 @@
     <ClInclude Include="Stream.h">
       <Filter>stream</Filter>
     </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -76,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="Stream.cpp">
       <Filter>stream</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>Graphics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
