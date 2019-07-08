@@ -19,6 +19,10 @@ void Device::Init(int w, int h)
 	for (int i = 0; i < h; i++)
 		mFrameBuffer[i] = fb + i * w;
 
+	mZBuffer = new float[h * w];
+
+	memset(mZBuffer, 0, h * w);
+
 	mCamera.mEye = Vector3(-5.0f, 50.0f, -5.0f);
 	mCamera.mLook = Vector3(50.0f, 50.0f, 50.0f);
 	mCamera.mUp	= Vector3(0.0f, 100.0f, 0.0f);
@@ -31,10 +35,13 @@ void Device::Init(int w, int h)
 
 void Device::ClearBuffer()
 {
-	for (int i = 0; i < mHeight; i++)
+	for (int y = 0; y < mHeight; y++)
 	{
-		for (int j = 0; j < mWidth; j++)
-			mFrameBuffer[i][j] = 0;
+		for (int x = 0; x < mWidth; x++)
+		{
+			mFrameBuffer[y][x] = 0;
+			mZBuffer[y*mWidth + x] = 0.0f;
+		}
 	}
 }
 
@@ -63,6 +70,10 @@ void Device::DrawPoint(const Vector3& point, const Color& color)
 	if (x > mWidth || x < 0 || y < 0 || y > mHeight)
 		return;
 
+	// Éî¶È²âÊÔ
+	if (point.z > mZBuffer[y * mWidth + x])
+		return;
+
 	mFrameBuffer[y][x] = r << 16 | g << 8 | b;
 }
 
@@ -79,12 +90,7 @@ void Device::DrawPoint3D(const Vector3& point, const Color& color)
 void Device::DrawLineDDA(const Vertex& start, const Vertex& end)
 {
 	Vector4 sp = start.mPos;
-	mTransform->ApplyTransform(sp, start.mPos);
-	mTransform->Homogenize(sp);
-
 	Vector4 ep = end.mPos;
-	mTransform->ApplyTransform(ep, end.mPos);
-	mTransform->Homogenize(ep);
 
 	Color sc = start.mColor;
 	Color ec = end.mColor;
@@ -166,7 +172,174 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end)
 
 void Device::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
 {
-	DrawLineDDA(v1, v2);
-	DrawLineDDA(v3, v2);
-	DrawLineDDA(v1, v3);
+	if (CheckBackCull(v1, v2, v3))
+		return;
+
+	Vertex newv1 = v1;
+	Vertex newv2 = v2;
+	Vertex newv3 = v3;
+
+	mTransform->ApplyTransform(newv1.mPos, v1.mPos);
+	mTransform->Homogenize(newv1.mPos);
+
+	mTransform->ApplyTransform(newv2.mPos, v2.mPos);
+	mTransform->Homogenize(newv2.mPos);
+
+	mTransform->ApplyTransform(newv3.mPos, v3.mPos);
+	mTransform->Homogenize(newv3.mPos);
+
+	FillTriangle(newv1, newv2, newv3);
+
+	DrawLineDDA(newv1, newv2);
+	DrawLineDDA(newv3, newv2);
+	DrawLineDDA(newv1, newv3);
 }
+
+Vertex Vertexlerp(const Vertex& v1, const Vertex& v2, float lerp)
+{
+	Vertex v;
+	v.mPos.x = v1.mPos.x + lerp * (v2.mPos.x - v1.mPos.x);
+	v.mPos.y = v1.mPos.y + lerp * (v2.mPos.y - v1.mPos.y);
+	v.mPos.z = v1.mPos.z + lerp * (v2.mPos.z - v1.mPos.z);
+	v.mPos.w = 1.0f;
+	v.mColor.r = v1.mColor.r + lerp * (v2.mColor.r - v1.mColor.r);
+	v.mColor.g = v1.mColor.g + lerp * (v2.mColor.g - v1.mColor.g);
+	v.mColor.b = v1.mColor.b + lerp * (v2.mColor.b - v1.mColor.b);
+	v.mNormal = v1.mNormal;
+
+	return v;
+}
+
+void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
+{
+	//if (CheckBackCull(v1, v2, v3))
+	//	return;
+
+	if (v1.mPos.y == v2.mPos.y && v1.mPos.y == v3.mPos.y)
+		return;
+
+	if (v1.mPos.y == v2.mPos.y)
+	{
+		int y1 = (int)(v3.mPos.y + 0.5f);
+		int y2 = (int)(v1.mPos.y + 0.5f);
+		
+		int top = min(y1, y2);
+		int bottom = max(y1, y2);
+
+		for (int i = top; i <= bottom; i++)
+		{
+			float lerp = (float)(i - top) / (float)(bottom - top);
+			if (v3.mPos.y < v1.mPos.y)
+				lerp = -lerp;
+			Vertex vl = Vertexlerp(v3, v1, lerp);
+			Vertex vr = Vertexlerp(v3, v2, lerp);
+			vl.mPos.y = vr.mPos.y = i;
+			DrawLineDDA(vl, vr);
+		}
+	}
+	else if (v1.mPos.y == v3.mPos.y)
+	{
+		int y1 = (int)(v2.mPos.y + 0.5f);
+		int y2 = (int)(v1.mPos.y + 0.5f);
+
+		int top = max(y1, y2);
+		int bottom = min(y1, y2);
+
+		for (int i = bottom; i < top; i++)
+		{
+			float lerp = (i - bottom) / (float)(top - bottom);
+			if (v2.mPos.y < v1.mPos.y)
+				lerp = -lerp;
+			Vertex vl = Vertexlerp(v2, v1, lerp);
+			Vertex vr = Vertexlerp(v2, v3, lerp);
+			vl.mPos.y = vr.mPos.y == i;
+			DrawLineDDA(vl, vr);
+		}
+	}
+	else if (v2.mPos.y == v3.mPos.y)
+	{
+		int y1 = (int)(v3.mPos.y + 0.5f);
+		int y2 = (int)(v1.mPos.y + 0.5f);
+
+		int top = max(y1, y2);
+		int bottom = min(y1, y2);
+
+		for (int i = bottom; i < top; i++)
+		{
+			float lerp = (i - bottom) / (float)(top - bottom);
+			if (v1.mPos.y < v2.mPos.y)
+				lerp = -lerp;
+			Vertex vl = Vertexlerp(v1, v2, lerp);
+			Vertex vr = Vertexlerp(v1, v3, lerp);
+			vl.mPos.y = vr.mPos.y == i;
+			DrawLineDDA(vl, vr);
+		}
+	}
+	else
+	{
+		Vertex middle = v1;
+		Vertex top = v2;
+		Vertex bottom = v3;
+
+		float y = min(v1.mPos.y, v2.mPos.y);
+		y = max(y, v3.mPos.y);
+
+		if (y == v2.mPos.y)
+		{
+			middle = v2;
+			if (v1.mPos.y > v3.mPos.y)
+			{
+				top = v1;
+				bottom = v3;
+			}
+			else
+			{
+				top = v3;
+				bottom = v1;
+			}
+		}
+		else if (y == v3.mPos.y)
+		{
+			middle = v3;
+			if (v1.mPos.y > v2.mPos.y)
+			{
+				top = v1;
+				bottom = v2;
+			}
+			else
+			{
+				top = v2;
+				bottom = v1;
+			}
+		}
+		else
+		{
+			if (v2.mPos.y > v3.mPos.y)
+			{
+				top = v2;
+				bottom = v3;
+			}
+			else
+			{
+				top = v3;
+				bottom = v2;
+			}
+		}
+
+		float lerp = (float)(middle.mPos.y - bottom.mPos.y) / (float)(top.mPos.y - bottom.mPos.y);
+		Vertex mp = Vertexlerp(bottom, top, lerp);
+
+		FillTriangle(top, middle, mp);
+		FillTriangle(middle, mp, bottom);
+	}
+
+}
+
+bool Device::CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3) const
+{
+	Vector4 vec1 = v2.mPos - v1.mPos;
+	Vector4 vec2 = v3.mPos - v2.mPos;
+	Vector4 normal = Vector4::Cross( vec1, vec2 );
+
+	return normal.z > 0;
+}  

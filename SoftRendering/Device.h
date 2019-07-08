@@ -14,6 +14,7 @@ private:
 
 	DrawBoard* mDrawBoard;
 	int** mFrameBuffer;
+	float* mZBuffer;
 
 	Transform*	mTransform;
 	Camera		mCamera;
@@ -33,4 +34,6 @@ public:
 	void DrawPoint3D(const Vector3& point, const Color& color);
 	void DrawLineDDA(const Vertex& start, const Vertex& end);
 	void DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3);
+	void FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3);
+	bool CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 };
