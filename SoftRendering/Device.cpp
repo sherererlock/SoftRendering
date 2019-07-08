@@ -92,6 +92,9 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end)
 	Vector4 sp = start.mPos;
 	Vector4 ep = end.mPos;
 
+	if (sp.x == ep.x && sp.y == ep.y)
+		return;
+
 	Color sc = start.mColor;
 	Color ec = end.mColor;
 
@@ -115,7 +118,7 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end)
 
 		for (int i = 0; i < steps; i++)
 		{ 
-			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltag * i, sc.a + deltaa * i);
+			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltab * i, sc.a + deltaa * i);
 			DrawPoint(Vector3(x, y, 0.0f), color);
 			y += deltay * i;
 			if (y < 0 || y > mHeight)
@@ -138,7 +141,7 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end)
 
 		for (int i = 0; i < steps; i++)
 		{
-			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltag * i, sc.a + deltaa * i);
+			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltab * i, sc.a + deltaa * i);
 			DrawPoint(Vector3(x, y, 0.0f), color);
 			x += deltax;
 			y += k * deltax;
@@ -159,7 +162,7 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end)
 
 		for (int i = 0; i <= steps; i++)
 		{
-			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltag * i, sc.a + deltaa * i);
+			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltab * i, sc.a + deltaa * i);
 			DrawPoint(Vector3(x, y, 0.0f), color);
 			x += deltay / k;
 			y += deltay;
@@ -229,11 +232,10 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
 		for (int i = top; i <= bottom; i++)
 		{
 			float lerp = (float)(i - top) / (float)(bottom - top);
-			if (v3.mPos.y < v1.mPos.y)
-				lerp = -lerp;
 			Vertex vl = Vertexlerp(v3, v1, lerp);
 			Vertex vr = Vertexlerp(v3, v2, lerp);
 			vl.mPos.y = vr.mPos.y = i;
+
 			DrawLineDDA(vl, vr);
 		}
 	}
@@ -248,8 +250,6 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
 		for (int i = bottom; i < top; i++)
 		{
 			float lerp = (i - bottom) / (float)(top - bottom);
-			if (v2.mPos.y < v1.mPos.y)
-				lerp = -lerp;
 			Vertex vl = Vertexlerp(v2, v1, lerp);
 			Vertex vr = Vertexlerp(v2, v3, lerp);
 			vl.mPos.y = vr.mPos.y == i;
@@ -267,8 +267,6 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
 		for (int i = bottom; i < top; i++)
 		{
 			float lerp = (i - bottom) / (float)(top - bottom);
-			if (v1.mPos.y < v2.mPos.y)
-				lerp = -lerp;
 			Vertex vl = Vertexlerp(v1, v2, lerp);
 			Vertex vr = Vertexlerp(v1, v3, lerp);
 			vl.mPos.y = vr.mPos.y == i;
