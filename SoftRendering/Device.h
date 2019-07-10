@@ -3,6 +3,7 @@
 #include"Vector.h"
 #include"Color.h"
 #include"Vertex.h"
+#include"Light.h"
 #include"Transform.h"
 
 class Device
@@ -18,6 +19,9 @@ private:
 
 	Transform*	mTransform;
 	Camera		mCamera;
+	Light		mPoint;
+	Light		mSky;
+	Light		mAmbient;
 
 public:
 	Device() : mWidth(800), mHeight(600), mDrawBoard(NULL), mFrameBuffer(NULL), mWireFrame(false) {}
@@ -36,4 +40,5 @@ public:
 	void DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3);
 	void FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3);
 	bool CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
+	void LightShader(Vertex& vertex, const Light& light) const;
 };

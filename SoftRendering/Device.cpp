@@ -31,6 +31,15 @@ void Device::Init(int w, int h)
 	mTransform->SetView(mCamera);
 	mTransform->Init(w, h);
 	mTransform->UpdateTransform();
+
+	mAmbient.mColor = Color(1.0f, 1.0f, 1.0f, 1.0f);
+	mAmbient.mPos = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	mPoint.mColor = Color(255.0f, 255.0f, 255.0f, 255.0f);
+	mPoint.mPos = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	mSky.mColor = Color(255.0f, 255.0f, 255.0f, 255.0f);
+	mSky.mPos = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void Device::ClearBuffer()
@@ -181,6 +190,15 @@ void Device::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
 	Vertex newv1 = v1;
 	Vertex newv2 = v2;
 	Vertex newv3 = v3;
+
+	//LightShader(newv1, mPoint);
+	//LightShader(newv1, mSky);
+
+	//LightShader(newv2, mPoint);
+	//LightShader(newv2, mSky);
+
+	//LightShader(newv3, mPoint);
+	//LightShader(newv3, mSky);
 
 	mTransform->ApplyTransform(newv1.mPos, v1.mPos);
 	mTransform->Homogenize(newv1.mPos);
@@ -340,4 +358,19 @@ bool Device::CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3)
 	Vector4 normal = Vector4::Cross( vec1, vec2 );
 
 	return normal.z > 0;
-}  
+}
+
+void Device::LightShader(Vertex& vertex, const Light& light) const
+{
+	Vector4 campos(mCamera.mEye.x, mCamera.mEye.y, mCamera.mEye.z, 1.0f);
+	Color specular = Light::CalcSpecular(campos, light, vertex);
+	Color diffuse = Light::CalcDiffuse(light, vertex);
+	Color ambient = Light::CalcAmbient(light, vertex);
+
+	vertex.mColor = vertex.mColor * (specular + diffuse + ambient);
+
+	vertex.mColor.r = vertex.mColor.r > 255.0f ? 255.0f : 255.0f;
+	vertex.mColor.g = vertex.mColor.g > 255.0f ? 255.0f : 255.0f;
+	vertex.mColor.b = vertex.mColor.b > 255.0f ? 255.0f : 255.0f;
+	vertex.mColor.a = vertex.mColor.a > 255.0f ? 255.0f : 255.0f;
+}

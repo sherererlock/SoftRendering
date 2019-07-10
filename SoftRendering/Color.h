@@ -17,4 +17,9 @@ public:
 	{
 		return Color(r * factor, g * factor, b * factor, a * factor);
 	}
+
+	Color operator+ (const Color& color) const
+	{
+		return Color(r + color.r, g + color.g, b + color.b, a + color.a);
+	}
 };

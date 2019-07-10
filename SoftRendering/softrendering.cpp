@@ -13,6 +13,14 @@ void DrawTriangle()
 	v2.mColor = Color( 0.0f, 255.0f, 0.0f, 1.0f );
 	v3.mPos = Vector4( 50.0f, 100.0f, 50.0f, 1.0f );
 	v3.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
+
+	//v1.mPos = Vector4( 50.0f, 0.0f, 50.0f, 1.0f );
+	//v1.mColor = Color( 255.0f, 0.0f, 0.0f, 1.0f );
+	//v2.mPos = Vector4(100.0f, 0.0f, 50.0f, 1.0f);
+	//v2.mColor = Color( 0.0f, 255.0f, 0.0f, 1.0f );
+	//v3.mPos = Vector4( 100.0f, 0.0f, 100.0f, 1.0f);
+	//v3.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
+
 	device->DrawTriangle(v1, v2, v3);
 }
 
