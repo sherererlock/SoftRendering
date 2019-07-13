@@ -2,15 +2,10 @@
 #include"Transform.h"
 #include"Stream.h"
 
-#define PI 3.1415926
-
 void Transform::Init(float w, float h)
 {
 	mWidth = w;
 	mHeight = h;
-
-	float aspect = w / h;
-	SetPerspective(0.5f*PI, aspect, 1.0f, 600.0f);
 }
 
 void Transform::SetView(const Camera& cam)
@@ -32,25 +27,29 @@ void Transform::SetPerspective(float fov, float aspect, float znear, float zfar)
 
 void Transform::UpdateTransform()
 {
-	Matrix4D tmp;
-	Matrix4D::Multiply(mWorld, mView, tmp);
+	Matrix4D::Multiply(mWorld, mView, mWV);
 
-	Stream::PrintMatrix4D(tmp, "tmp");
+	Stream::PrintMatrix4D(mWV, "tmp");
 
-	Matrix4D::Multiply(tmp, mProject, mWVP);
+	Matrix4D::Multiply(mWV, mProject, mWVP);
 
 	Stream::PrintMatrix4D(mView, "mView");
 	Stream::PrintMatrix4D(mProject, "mProject");
 	Stream::PrintMatrix4D(mWVP, "WVP");
 }
 
-void Transform::ApplyTransform(Vector4& vout, const Vector4& vin)
+void Transform::TransformToViewSpace(Vector4& vout, const Vector4& vin)
+{
+	Matrix4D::MulRight(vout, vin, mWV);
+}
+
+void Transform::TransformToProjectSpace(Vector4& vout, const Vector4& vin)
 {
 	Matrix4D::MulRight(vout, vin, mWVP);
 }
 
-//归一化得到屏幕坐标
-void Transform::Homogenize(Vector4 &v1)
+//转换到NDC空间
+void Transform::TransformToScreenSpace(Vector4 &v1)
 {
 	//std::cout <<  v1.x << "!" << v1.y << "!" << v1.z<< "!" << v1.w << "\n";
 	float w = 1.0f / v1.w;

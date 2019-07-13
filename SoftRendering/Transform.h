@@ -9,6 +9,7 @@ private:
 	Matrix4D	mWorld;
 	Matrix4D	mView;
 	Matrix4D	mProject;
+	Matrix4D	mWV;
 	Matrix4D	mWVP;
 
 	float		mWidth;
@@ -21,6 +22,7 @@ public:
 	void SetView(const Camera& cam);
 	void SetPerspective(float fov, float aspect, float znear, float zfar);
 	void UpdateTransform();
-	void ApplyTransform(Vector4& vout, const Vector4& vin);
-	void Homogenize(Vector4 &v1);
+	void TransformToViewSpace(Vector4& vout, const Vector4& vin);
+	void TransformToProjectSpace(Vector4& vout, const Vector4& vin);
+	void TransformToScreenSpace(Vector4 &v1);
 };
