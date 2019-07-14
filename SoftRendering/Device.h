@@ -40,9 +40,14 @@ public:
 	void DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 	void FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 	void FillTriangleHelper(Vertex& v1, Vertex& v2, Vertex& v3) const;
+	void FillTriangleHelper1(Vertex& v1, Vertex& v2, Vertex& v3) const;
 	void DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const;
 	void FillQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const;
 	void FrustumCulling(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 	bool CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 	void LightShader(Vertex& vertex, const Light& light) const;
+
+	void MoveCameraForwardOrBackward(float dis);
+	void MoveCameraRightOrLeft(float dis);
+	void MoveCameraUpOrDown(float dis);
 };

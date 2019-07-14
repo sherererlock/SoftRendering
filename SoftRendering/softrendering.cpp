@@ -46,19 +46,19 @@ void DrawHexahedron()
 	v7.mColor = Color(0.0f, 255.0f, 255.0f, 1.0f);
 	v8.mColor = Color(255.0f, 0.0f, 255.0f, 1.0f);
 
-	//device->DrawQuadrangle(v2, v1, v4, v3);
-	//device->DrawQuadrangle(v1, v2, v6, v5);
-	//device->DrawQuadrangle(v4, v1, v5, v8);
-	//device->DrawQuadrangle(v2, v3, v7, v6);
-	//device->DrawQuadrangle(v3, v4, v8, v7);
-	//device->DrawQuadrangle(v5, v6, v7, v8);
+	device->DrawQuadrangle(v2, v1, v4, v3);
+	device->DrawQuadrangle(v1, v2, v6, v5);
+	device->DrawQuadrangle(v4, v1, v5, v8);
+	device->DrawQuadrangle(v2, v3, v7, v6);
+	device->DrawQuadrangle(v3, v4, v8, v7);
+	device->DrawQuadrangle(v5, v6, v7, v8);
 
 	device->FillQuadrangle(v2, v1, v4, v3);
-	//device->FillQuadrangle(v1, v2, v6, v5);
-	//device->FillQuadrangle(v4, v1, v5, v8);
-	//device->FillQuadrangle(v2, v3, v7, v6);
-	//device->FillQuadrangle(v3, v4, v8, v7);
-	//device->FillQuadrangle(v5, v6, v7, v8);
+	device->FillQuadrangle(v1, v2, v6, v5);
+	device->FillQuadrangle(v4, v1, v5, v8);
+	device->FillQuadrangle(v2, v3, v7, v6);
+	device->FillQuadrangle(v3, v4, v8, v7);
+	device->FillQuadrangle(v5, v6, v7, v8);
 }
 
 int main()
@@ -75,6 +75,31 @@ int main()
 	{
 		if (device->GetDrawBoard( )->IsKeyDown(VK_ESCAPE))
 			break;
+
+		if (device->GetDrawBoard()->IsKeyDown(VK_UP) || device->GetDrawBoard()->IsKeyDown(87))
+		{
+			device->MoveCameraForwardOrBackward(1.0f);
+		}
+		else if (device->GetDrawBoard()->IsKeyDown(VK_DOWN) || device->GetDrawBoard()->IsKeyDown(83))
+		{
+			device->MoveCameraForwardOrBackward(-1.0f);
+		}
+		else if (device->GetDrawBoard()->IsKeyDown(VK_LEFT) || device->GetDrawBoard()->IsKeyDown(65))
+		{
+			device->MoveCameraRightOrLeft(-1.0f);
+		}
+		else if (device->GetDrawBoard()->IsKeyDown(VK_RIGHT) || device->GetDrawBoard()->IsKeyDown(68))
+		{
+			device->MoveCameraRightOrLeft(1.0f);
+		}
+		else if (device->GetDrawBoard()->IsKeyDown(81))
+		{
+			device->MoveCameraUpOrDown(1.0f);
+		}
+		else if (device->GetDrawBoard()->IsKeyDown(69))
+		{
+			device->MoveCameraUpOrDown(-1.0f);
+		}
 
 		device->ClearBuffer();
 

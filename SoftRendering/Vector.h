@@ -91,6 +91,11 @@ public:
 		return Vector3(x * v.x, y * v.y, z * v.z);
 	}
 
+	Vector3 operator * (float v) const
+	{
+		return Vector3(x * v, y * v, z * v);
+	}
+
 	inline static float Dot(const Vector3& v1, const Vector3& v2)
 	{
 		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;

@@ -266,59 +266,49 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 	FillTriangleHelper(newv1, newv2, newv3);
 }
 
+void Device::FillTriangleHelper1(Vertex& newv1, Vertex& newv2, Vertex& newv3) const
+{
+	int y1 = (int)(newv3.mPos.y + 0.5f);
+	int y2 = (int)(newv1.mPos.y + 0.5f);
+
+	int top = min(y1, y2);
+	int bottom = max(y1, y2);
+
+	bool up = newv3.mPos.y < newv1.mPos.y;
+	for (int i = top; i <= bottom; i++)
+	{
+		float lerp = (float)(i - top) / (float)(bottom - top);
+		Vertex vl, vr;
+		if (up)
+		{
+			vl = Vertexlerp(newv3, newv1, lerp);
+			vr = Vertexlerp(newv3, newv2, lerp);
+		}
+		else
+		{
+			vl = Vertexlerp(newv1, newv3, lerp);
+			vr = Vertexlerp(newv2, newv3, lerp);
+		}
+
+		vl.mPos.y = vr.mPos.y = i;
+
+		DrawLineDDA(vl, vr);
+	}
+}
+
 void Device::FillTriangleHelper(Vertex& newv1, Vertex& newv2, Vertex& newv3) const
 {
 	if (newv1.mPos.y == newv2.mPos.y)
 	{
-		int y1 = (int)(newv3.mPos.y + 0.5f);
-		int y2 = (int)(newv1.mPos.y + 0.5f);
-
-		int top = min(y1, y2);
-		int bottom = max(y1, y2);
-
-		for (int i = top; i <= bottom; i++)
-		{
-			float lerp = (float)(i - top) / (float)(bottom - top);
-			Vertex vl = Vertexlerp(newv3, newv1, lerp);
-			Vertex vr = Vertexlerp(newv3, newv2, lerp);
-			vl.mPos.y = vr.mPos.y = i;
-
-			DrawLineDDA(vl, vr);
-		}
+		FillTriangleHelper1(newv1, newv2, newv3);
 	}
 	else if (newv1.mPos.y == newv3.mPos.y)
 	{
-		int y1 = (int)(newv2.mPos.y + 0.5f);
-		int y2 = (int)(newv1.mPos.y + 0.5f);
-
-		int top = max(y1, y2);
-		int bottom = min(y1, y2);
-
-		for (int i = bottom; i < top; i++)
-		{
-			float lerp = (i - bottom) / (float)(top - bottom);
-			Vertex vl = Vertexlerp(newv2, newv1, lerp);
-			Vertex vr = Vertexlerp(newv2, newv3, lerp);
-			vl.mPos.y = vr.mPos.y = i;
-			DrawLineDDA(vl, vr);
-		}
+		FillTriangleHelper1(newv1, newv3, newv2);
 	}
 	else if (newv2.mPos.y == newv3.mPos.y)
 	{
-		int y1 = (int)(newv3.mPos.y + 0.5f);
-		int y2 = (int)(newv1.mPos.y + 0.5f);
-
-		int top = max(y1, y2);
-		int bottom = min(y1, y2);
-
-		for (int i = bottom; i < top; i ++)
-		{
-			float lerp = (i - bottom) / (float)(top - bottom);
-			Vertex vl = Vertexlerp(newv1, newv2, 1-lerp);
-			Vertex vr = Vertexlerp(newv1, newv3, lerp);
-			vl.mPos.y = vr.mPos.y = i;
-			DrawLineDDA(vl, vr);
-		}
+		FillTriangleHelper1(newv2, newv3, newv1);
 	}
 	else
 	{
@@ -418,4 +408,43 @@ void Device::LightShader(Vertex& vertex, const Light& light) const
 	vertex.mColor.g = vertex.mColor.g > 255.0f ? 255.0f : 255.0f;
 	vertex.mColor.b = vertex.mColor.b > 255.0f ? 255.0f : 255.0f;
 	vertex.mColor.a = vertex.mColor.a > 255.0f ? 255.0f : 255.0f;
+}
+
+void Device::MoveCameraForwardOrBackward(float dis)
+{
+	Vector3 forward = (mCamera.mLook - mCamera.mEye).Normorlize();
+	mCamera.mEye = mCamera.mEye + forward * dis;
+	mCamera.mLook = mCamera.mLook + forward * dis;
+
+	mTransform->SetView(mCamera);
+	mTransform->UpdateTransform();
+}
+
+void Device::MoveCameraRightOrLeft(float dis)
+{
+	Vector3 forward = (mCamera.mLook - mCamera.mEye).Normorlize();
+	Vector3 up = mCamera.mUp.Normorlize();
+	Vector3 right = Vector3::Cross(up, forward);
+
+	mCamera.mEye = mCamera.mEye + right * dis;
+	mCamera.mLook = mCamera.mLook + right * dis;
+
+	mTransform->SetView(mCamera);
+	mTransform->UpdateTransform();
+}
+
+void Device::MoveCameraUpOrDown(float dis)
+{
+	Vector3 forward = (mCamera.mLook - mCamera.mEye).Normorlize();
+	Vector3 nup = mCamera.mUp.Normorlize();
+	Vector3 right = Vector3::Cross(nup, forward);
+	right.Normorlize();
+	Vector3 up = Vector3::Cross(forward, right);
+	up.Normorlize();
+
+	mCamera.mEye = mCamera.mEye + up * dis;
+	mCamera.mLook = mCamera.mLook + up * dis;
+
+	mTransform->SetView(mCamera);
+	mTransform->UpdateTransform();
 }
