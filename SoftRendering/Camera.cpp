@@ -13,9 +13,9 @@ Matrix4D Camera::LookAt() const
 
 	Matrix4D camToWorld;
 
-	Stream::PrintVector3(forward, "forward");
-	Stream::PrintVector3(right, "right");
-	Stream::PrintVector3(up, "up");
+	//Stream::PrintVector3(forward, "forward");
+	//Stream::PrintVector3(right, "right");
+	//Stream::PrintVector3(up, "up");
 
 	camToWorld.mMat[0][0] = right.x;
 	camToWorld.mMat[1][0] = right.y;

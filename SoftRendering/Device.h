@@ -23,6 +23,9 @@ private:
 	Light		mSky;
 	Light		mAmbient;
 
+private:
+	Vertex Vertexlerp(const Vertex& v1, const Vertex& v2, float lerp) const;
+
 public:
 	Device() : mWidth(800), mHeight(600), mDrawBoard(NULL), mFrameBuffer(NULL), mWireFrame(false) {}
 	Device(int width, int height) :mWidth(width), mHeight(height), mDrawBoard(NULL), mFrameBuffer(NULL), mWireFrame(false) {}
@@ -36,6 +39,7 @@ public:
 	void Close();
 	void DrawPoint(const Vector3& point, const Color& color) const;
 	void DrawPoint3D(const Vector3& point, const Color& color) const;
+	void DrawLine(const Vertex& start, const Vertex& end) const;
 	void DrawLineDDA(const Vertex& start, const Vertex& end) const;
 	void DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 	void FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;

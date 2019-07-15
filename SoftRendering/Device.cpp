@@ -22,18 +22,18 @@ void Device::Init(int w, int h)
 
 	mZBuffer = new float[h * w];
 
-	memset(mZBuffer, 0, h * w);
+	memset(mZBuffer, 1, h * w);
 
 	mCamera.mEye = Vector3(-5.0f, 50.0f, -5.0f);
 	mCamera.mLook = Vector3(50.0f, 50.0f, 50.0f);
 	mCamera.mUp	= Vector3(0.0f, 100.0f, 0.0f);
 	mCamera.mNear = 1.0f;
-	mCamera.mNear = 600.f;
+	mCamera.mFar = 600.f;
 
 	mTransform = new Transform();
 	mTransform->Init(w, h);
 	mTransform->SetView(mCamera);
-	mTransform->SetPerspective(0.5f*PI, w / h, mCamera.mNear, mCamera.mFar);
+	mTransform->SetPerspective(0.5f*PI, (float)w / (float)h, mCamera.mNear, mCamera.mFar);
 	mTransform->UpdateTransform();
 
 	mAmbient.mColor = Color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -53,7 +53,7 @@ void Device::ClearBuffer()
 		for (int x = 0; x < mWidth; x++)
 		{
 			mFrameBuffer[y][x] = 0;
-			mZBuffer[y*mWidth + x] = 0.0f;
+			mZBuffer[y*mWidth + x] = 1.0f;
 		}
 	}
 }
@@ -84,8 +84,12 @@ void Device::DrawPoint(const Vector3& point, const Color& color) const
 		return;
 
 	// Éî¶È²âÊÔ
+	//Stream::PrintVector3(Vector3(point.z, point.z, point.z), "point");
+	//Stream::PrintVector3(Vector3(mZBuffer[y * mWidth + x], mZBuffer[y * mWidth + x], mZBuffer[y * mWidth + x]), "zbuff");
 	if (point.z > mZBuffer[y * mWidth + x])
 		return;
+	else
+		mZBuffer[y * mWidth + x] = point.z;
 
 	mFrameBuffer[y][x] = r << 16 | g << 8 | b;
 }
@@ -98,6 +102,40 @@ void Device::DrawPoint3D(const Vector3& point, const Color& color) const
 
 	//Stream::PrintVector3(Vector3(v.x, v.y, v.z), "3dpoint");
 	DrawPoint(Vector3(v.x, v.y, v.z), color);
+}
+
+void Device::DrawLine(const Vertex& start, const Vertex& end) const
+{
+	Vector4 sp = start.mPos;
+	Vector4 ep = end.mPos;
+
+	float dx = abs(ep.x - sp.x);
+	float dy = abs(ep.y - sp.y);
+
+	if (dx > dy)
+	{	
+		const Vertex& left = (ep.x > sp.x) ? start : end;
+		const Vertex& right = (ep.x > sp.x) ? end : start;
+
+		for (int i = left.mPos.x; i < right.mPos.x; i++)
+		{
+			float lerp = (i - left.mPos.x) / (right.mPos.x - left.mPos.x);
+			Vertex vertex = Vertexlerp(left, right, lerp);
+			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z ) , vertex.mColor);
+		}
+	}
+	else
+	{
+		const Vertex& down = (ep.y > sp.y) ? start : end;
+		const Vertex& up = (ep.y > sp.y) ? end : start;
+
+		for (int i = down.mPos.x; i < up.mPos.x; i++)
+		{
+			float lerp = (i - down.mPos.x) / (up.mPos.x - down.mPos.x);
+			Vertex vertex = Vertexlerp(down, up, lerp);
+			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z), vertex.mColor);
+		}
+	}
 }
 
 void Device::DrawLineDDA(const Vertex& start, const Vertex& end) const
@@ -116,6 +154,8 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end) const
 	float b = ec.b - sc.b;
 	float a = ec.a - sc.a;
 
+	float z = ep.z - sp.z;
+
 	float x = sp.x;
 	float y = sp.y;
 
@@ -129,10 +169,13 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end) const
 		float deltab = b / steps;
 		float deltaa = a / steps;
 
+		float deltaz = z / steps;
+
 		for (int i = 0; i < steps; i++)
 		{ 
 			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltab * i, sc.a + deltaa * i);
-			DrawPoint(Vector3(x, y, 0.0f), color);
+			float pointz = sp.z + deltaz * i;
+			DrawPoint(Vector3(x, y, pointz), color);
 			y += deltay;
 			if (y < 0 || y > mHeight)
 				break;
@@ -152,10 +195,13 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end) const
 		float deltab = b / steps;
 		float deltaa = a / steps;
 
+		float deltaz = z / steps;
+
 		for (int i = 0; i < steps; i++)
 		{
 			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltab * i, sc.a + deltaa * i);
-			DrawPoint(Vector3(x, y, 0.0f), color);
+			float pointz = sp.z + deltaz * i;
+			DrawPoint(Vector3(x, y, pointz), color);
 			x += deltax;
 			y += k * deltax;
 
@@ -173,10 +219,13 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end) const
 		float deltab = b / steps;
 		float deltaa = a / steps;
 
+		float deltaz = z / steps;
+
 		for (int i = 0; i <= steps; i++)
 		{
 			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltab * i, sc.a + deltaa * i);
-			DrawPoint(Vector3(x, y, 0.0f), color);
+			float pointz = sp.z + deltaz * i;
+			DrawPoint(Vector3(x, y, pointz), color);
 			x += deltay / k;
 			y += deltay;
 
@@ -186,7 +235,7 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end) const
 	}
 }
 
-Vertex Vertexlerp(const Vertex& v1, const Vertex& v2, float lerp)
+Vertex Device::Vertexlerp(const Vertex& v1, const Vertex& v2, float lerp) const
 {
 	Vertex v;
 	v.mPos.x = v1.mPos.x + lerp * (v2.mPos.x - v1.mPos.x);
@@ -251,13 +300,16 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 	//LightShader(newv3, mPoint);
 	//LightShader(newv3, mSky);
 
-	mTransform->TransformToProjectSpace(newv1.mPos, v1.mPos);
+	mTransform->TransformToViewSpace(newv1.mPos, v1.mPos);
+	mTransform->TransformToProjectSpace(newv1.mPos, newv1.mPos);
 	mTransform->TransformToScreenSpace(newv1.mPos);
 
-	mTransform->TransformToProjectSpace(newv2.mPos, v2.mPos);
+	mTransform->TransformToViewSpace(newv2.mPos, v2.mPos);
+	mTransform->TransformToProjectSpace(newv2.mPos, newv2.mPos);
 	mTransform->TransformToScreenSpace(newv2.mPos);
 
-	mTransform->TransformToProjectSpace(newv3.mPos, v3.mPos);
+	mTransform->TransformToViewSpace(newv3.mPos, v3.mPos);
+	mTransform->TransformToProjectSpace(newv3.mPos, newv3.mPos);
 	mTransform->TransformToScreenSpace(newv3.mPos);
 
 	if (newv1.mPos.y == newv2.mPos.y && newv1.mPos.y == newv3.mPos.y)
@@ -292,7 +344,7 @@ void Device::FillTriangleHelper1(Vertex& newv1, Vertex& newv2, Vertex& newv3) co
 
 		vl.mPos.y = vr.mPos.y = i;
 
-		DrawLineDDA(vl, vr);
+		DrawLine(vl, vr);
 	}
 }
 
@@ -371,8 +423,8 @@ void Device::FillTriangleHelper(Vertex& newv1, Vertex& newv2, Vertex& newv3) con
 
 void Device::DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const
 {
-	DrawTriangle(v1, v2, v3);
-	DrawTriangle(v1, v3, v4);
+	//DrawTriangle(v1, v2, v3);
+	//DrawTriangle(v1, v3, v4);
 }
 
 void Device::FillQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const

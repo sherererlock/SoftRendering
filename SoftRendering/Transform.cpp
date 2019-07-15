@@ -29,13 +29,13 @@ void Transform::UpdateTransform()
 {
 	Matrix4D::Multiply(mWorld, mView, mWV);
 
-	Stream::PrintMatrix4D(mWV, "tmp");
+	//Stream::PrintMatrix4D(mWV, "tmp");
 
 	Matrix4D::Multiply(mWV, mProject, mWVP);
 
-	Stream::PrintMatrix4D(mView, "mView");
-	Stream::PrintMatrix4D(mProject, "mProject");
-	Stream::PrintMatrix4D(mWVP, "WVP");
+	//Stream::PrintMatrix4D(mView, "mView");
+	//Stream::PrintMatrix4D(mProject, "mProject");
+	//Stream::PrintMatrix4D(mWVP, "WVP");
 }
 
 void Transform::TransformToViewSpace(Vector4& vout, const Vector4& vin)
@@ -45,7 +45,7 @@ void Transform::TransformToViewSpace(Vector4& vout, const Vector4& vin)
 
 void Transform::TransformToProjectSpace(Vector4& vout, const Vector4& vin)
 {
-	Matrix4D::MulRight(vout, vin, mWVP);
+	Matrix4D::MulRight(vout, vin, mProject);
 }
 
 //×ª»»µ½NDC¿Õ¼ä
