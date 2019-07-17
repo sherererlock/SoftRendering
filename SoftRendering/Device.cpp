@@ -138,6 +138,7 @@ void Device::DrawLine(const Vertex& start, const Vertex& end) const
 	}
 }
 
+// a  bug function
 void Device::DrawLineDDA(const Vertex& start, const Vertex& end) const
 {
 	Vector4 sp = start.mPos;
@@ -284,8 +285,8 @@ void Device::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 
 void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const
 {
-	//if (CheckBackCull(v1, v2, v3))
-	//	return;
+	if (CheckBackCull(v1, v2, v3))
+		return;
 
 	Vertex newv1 = v1;
 	Vertex newv2 = v2;
@@ -441,10 +442,10 @@ void Device::FrustumCulling(const Vertex& v1, const Vertex& v2, const Vertex& v3
 bool Device::CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3) const
 {
 	Vector4 vec1 = v2.mPos - v1.mPos;
-	Vector4 vec2 = v3.mPos - v2.mPos;
+	Vector4 vec2 = v3.mPos - v1.mPos;
 	Vector4 normal = Vector4::Cross( vec1, vec2 );
 
-	return normal.z > 0;
+	return normal.z < 0;
 }
 
 void Device::LightShader(Vertex& vertex, const Light& light) const
