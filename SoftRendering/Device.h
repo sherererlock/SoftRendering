@@ -1,4 +1,5 @@
 #pragma once
+#include<vector>
 #include"DrawBoard.h"
 #include"Vector.h"
 #include"Color.h"
@@ -17,14 +18,13 @@ private:
 	int** mFrameBuffer;
 	float* mZBuffer;
 
+	std::vector<Vector4> mPlanes;
+
 	Transform*	mTransform;
 	Camera		mCamera;
 	Light		mPoint;
 	Light		mSky;
 	Light		mAmbient;
-
-private:
-	Vertex Vertexlerp(const Vertex& v1, const Vertex& v2, float lerp) const;
 
 public:
 	Device() : mWidth(800), mHeight(600), mDrawBoard(NULL), mFrameBuffer(NULL), mWireFrame(false) {}
@@ -35,6 +35,7 @@ public:
 	inline bool GetWireFrame() { return mWireFrame; }
 	inline void SetWireFrame(bool wireframe) { mWireFrame = wireframe; }
 	void Init(int w, int h);
+	void InitPlane();
 	void ClearBuffer();
 	void Close();
 	void DrawPoint(const Vector3& point, const Color& color) const;

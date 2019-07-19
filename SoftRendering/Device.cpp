@@ -29,12 +29,15 @@ void Device::Init(int w, int h)
 	mCamera.mUp	= Vector3(0.0f, 100.0f, 0.0f);
 	mCamera.mNear = 1.0f;
 	mCamera.mFar = 600.f;
+	mCamera.mFov = 0.5f*PI;
 
 	mTransform = new Transform();
 	mTransform->Init(w, h);
 	mTransform->SetView(mCamera);
 	mTransform->SetPerspective(0.5f*PI, (float)w / (float)h, mCamera.mNear, mCamera.mFar);
 	mTransform->UpdateTransform();
+
+	InitPlane();
 
 	mAmbient.mColor = Color(1.0f, 1.0f, 1.0f, 1.0f);
 	mAmbient.mPos = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -44,6 +47,22 @@ void Device::Init(int w, int h)
 
 	mSky.mColor = Color(255.0f, 255.0f, 255.0f, 255.0f);
 	mSky.mPos = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+void Device::InitPlane()
+{
+	// near plane
+	mPlanes.push_back(Vector4(0, 0, 1, -1.0f));
+	// far plane
+	mPlanes.push_back(Vector4(0, 0, -1,600.0f));
+
+	// left plane
+
+	// right plane
+
+	// top plane
+
+	// bottom plane
 }
 
 void Device::ClearBuffer()
@@ -120,7 +139,7 @@ void Device::DrawLine(const Vertex& start, const Vertex& end) const
 		for (int i = left.mPos.x; i < right.mPos.x; i++)
 		{
 			float lerp = (i - left.mPos.x) / (right.mPos.x - left.mPos.x);
-			Vertex vertex = Vertexlerp(left, right, lerp);
+			Vertex vertex = Vertex::VertexLerp(left, right, lerp);
 			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z ) , vertex.mColor);
 		}
 	}
@@ -132,7 +151,7 @@ void Device::DrawLine(const Vertex& start, const Vertex& end) const
 		for (int i = down.mPos.x; i < up.mPos.x; i++)
 		{
 			float lerp = (i - down.mPos.x) / (up.mPos.x - down.mPos.x);
-			Vertex vertex = Vertexlerp(down, up, lerp);
+			Vertex vertex = Vertex::VertexLerp(down, up, lerp);
 			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z), vertex.mColor);
 		}
 	}
@@ -236,21 +255,6 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end) const
 	}
 }
 
-Vertex Device::Vertexlerp(const Vertex& v1, const Vertex& v2, float lerp) const
-{
-	Vertex v;
-	v.mPos.x = v1.mPos.x + lerp * (v2.mPos.x - v1.mPos.x);
-	v.mPos.y = v1.mPos.y + lerp * (v2.mPos.y - v1.mPos.y);
-	v.mPos.z = v1.mPos.z + lerp * (v2.mPos.z - v1.mPos.z);
-	v.mPos.w = 1.0f;
-	v.mColor.r = v1.mColor.r + lerp * (v2.mColor.r - v1.mColor.r);
-	v.mColor.g = v1.mColor.g + lerp * (v2.mColor.g - v1.mColor.g);
-	v.mColor.b = v1.mColor.b + lerp * (v2.mColor.b - v1.mColor.b);
-	v.mNormal = v1.mNormal;
-
-	return v;
-}
-
 void Device::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const
 {
 	if (CheckBackCull(v1, v2, v3))
@@ -334,13 +338,13 @@ void Device::FillTriangleHelper1(Vertex& newv1, Vertex& newv2, Vertex& newv3) co
 		Vertex vl, vr;
 		if (up)
 		{
-			vl = Vertexlerp(newv3, newv1, lerp);
-			vr = Vertexlerp(newv3, newv2, lerp);
+			vl = Vertex::VertexLerp(newv3, newv1, lerp);
+			vr = Vertex::VertexLerp(newv3, newv2, lerp);
 		}
 		else
 		{
-			vl = Vertexlerp(newv1, newv3, lerp);
-			vr = Vertexlerp(newv2, newv3, lerp);
+			vl = Vertex::VertexLerp(newv1, newv3, lerp);
+			vr = Vertex::VertexLerp(newv2, newv3, lerp);
 		}
 
 		vl.mPos.y = vr.mPos.y = i;
@@ -415,7 +419,7 @@ void Device::FillTriangleHelper(Vertex& newv1, Vertex& newv2, Vertex& newv3) con
 		}
 
 		float lerp = (float)(middle.mPos.y - bottom.mPos.y) / (float)(top.mPos.y - bottom.mPos.y);
-		Vertex mp = Vertexlerp(bottom, top, lerp);
+		Vertex mp = Vertex::VertexLerp(bottom, top, lerp);
 
 		FillTriangleHelper(top, middle, mp);
 		FillTriangleHelper(middle, bottom, mp);
