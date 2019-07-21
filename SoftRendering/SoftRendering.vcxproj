@@ -116,7 +116,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="CippingPlane.h" />
+    <ClInclude Include="ClippingPlane.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="header.h" />

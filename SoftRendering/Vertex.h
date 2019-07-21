@@ -1,6 +1,7 @@
 #pragma once
 #include"Vector.h"
 #include"Color.h"
+#include<vector>
 
 class Vertex
 {
@@ -32,5 +33,5 @@ public:
 
 struct Triangle
 {
-
+	std::vector<Vertex> mVertices;
 };

@@ -60,7 +60,7 @@
     <ClInclude Include="Light.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="CippingPlane.h">
+    <ClInclude Include="ClippingPlane.h">
       <Filter>Graphics</Filter>
     </ClInclude>
   </ItemGroup>

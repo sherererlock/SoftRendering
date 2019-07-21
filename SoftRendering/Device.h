@@ -13,12 +13,11 @@ private:
 	int mWidth;
 	int mHeight;
 	bool mWireFrame;
+	bool mBackCull;
 
 	DrawBoard* mDrawBoard;
 	int** mFrameBuffer;
 	float* mZBuffer;
-
-	std::vector<Vector4> mPlanes;
 
 	Transform*	mTransform;
 	Camera		mCamera;
@@ -26,8 +25,17 @@ private:
 	Light		mSky;
 	Light		mAmbient;
 
+	Vector4		mNearPlane;
+	Vector4		mFarPlane;
+	Vector4		mLeftPlane;
+	Vector4		mRightPlane;
+	Vector4		mTopPlane;
+	Vector4		mBottomPlane;
+private:
+	std::vector<Triangle> FrustumCullingHelper(const std::vector<Triangle>& triangles, const Vector4& plane) const;
+
 public:
-	Device() : mWidth(800), mHeight(600), mDrawBoard(NULL), mFrameBuffer(NULL), mWireFrame(false) {}
+	Device() : mWidth(800), mHeight(600), mDrawBoard(NULL), mFrameBuffer(NULL), mWireFrame(false), mBackCull(false) {}
 	Device(int width, int height) :mWidth(width), mHeight(height), mDrawBoard(NULL), mFrameBuffer(NULL), mWireFrame(false) {}
 	~Device() { }
 	inline DrawBoard* GetDrawBoard() { return mDrawBoard; }
@@ -48,7 +56,7 @@ public:
 	void FillTriangleHelper1(Vertex& v1, Vertex& v2, Vertex& v3) const;
 	void DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const;
 	void FillQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const;
-	void FrustumCulling(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
+	std::vector<Triangle> FrustumCulling(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 	bool CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 	void LightShader(Vertex& vertex, const Light& light) const;
 

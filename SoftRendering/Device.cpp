@@ -4,6 +4,8 @@
 #include"Device.h"
 #include"DrawBoard.h"
 #include"Stream.h"
+#include"ClippingPlane.h"
+
 
 #define Round(x) (int((x)+0.5f))
 #define PI 3.1415926
@@ -52,11 +54,12 @@ void Device::Init(int w, int h)
 void Device::InitPlane()
 {
 	// near plane
-	mPlanes.push_back(Vector4(0, 0, 1, -1.0f));
+	mNearPlane = Vector4(0, 0, 1, -mCamera.mNear);
 	// far plane
-	mPlanes.push_back(Vector4(0, 0, -1,600.0f));
+	mFarPlane = Vector4(0, 0, -1, mCamera.mFar);
 
 	// left plane
+	// 
 
 	// right plane
 
@@ -99,7 +102,7 @@ void Device::DrawPoint(const Vector3& point, const Color& color) const
 	int r = Round(color.r);
 	int g = Round(color.g);
 	int b = Round(color.b);
-	if (x > mWidth || x < 0 || y < 0 || y > mHeight)
+	if (x >= mWidth || x < 0 || y < 0 || y >= mHeight)
 		return;
 
 	// Éî¶È²âÊÔ
@@ -148,9 +151,9 @@ void Device::DrawLine(const Vertex& start, const Vertex& end) const
 		const Vertex& down = (ep.y > sp.y) ? start : end;
 		const Vertex& up = (ep.y > sp.y) ? end : start;
 
-		for (int i = down.mPos.x; i < up.mPos.x; i++)
+		for (int i = down.mPos.y; i < up.mPos.y; i++)
 		{
-			float lerp = (i - down.mPos.x) / (up.mPos.x - down.mPos.x);
+			float lerp = (i - down.mPos.y) / (up.mPos.y - down.mPos.y);
 			Vertex vertex = Vertex::VertexLerp(down, up, lerp);
 			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z), vertex.mColor);
 		}
@@ -257,9 +260,6 @@ void Device::DrawLineDDA(const Vertex& start, const Vertex& end) const
 
 void Device::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const
 {
-	if (CheckBackCull(v1, v2, v3))
-		return;
-
 	Vertex newv1 = v1;
 	Vertex newv2 = v2;
 	Vertex newv3 = v3;
@@ -273,25 +273,42 @@ void Device::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 	//LightShader(newv3, mPoint);
 	//LightShader(newv3, mSky);
 
-	mTransform->TransformToProjectSpace(newv1.mPos, v1.mPos);
-	mTransform->TransformToScreenSpace(newv1.mPos);
+	mTransform->TransformToViewSpace(newv2.mPos, v2.mPos);
+	mTransform->TransformToViewSpace(newv3.mPos, v3.mPos);
+	mTransform->TransformToViewSpace(newv1.mPos, v1.mPos);
 
-	mTransform->TransformToProjectSpace(newv2.mPos, v2.mPos);
-	mTransform->TransformToScreenSpace(newv2.mPos);
+	if (CheckBackCull(newv1, newv2, newv3))
+		return;
 
-	mTransform->TransformToProjectSpace(newv3.mPos, v3.mPos);
-	mTransform->TransformToScreenSpace(newv3.mPos);
+	std::vector<Triangle> triangles = FrustumCulling(newv1, newv2, newv3);
 
-	DrawLineDDA(newv1, newv2);
-	DrawLineDDA(newv3, newv2);
-	DrawLineDDA(newv1, newv3);
+	for (int i = 0; i < triangles.size(); i++)
+	{
+		Triangle triangle = triangles[i];
+		Vertex& ver1 = triangle.mVertices[0];
+		Vertex& ver2 = triangle.mVertices[1];
+		Vertex& ver3 = triangle.mVertices[2];
+
+		mTransform->TransformToProjectSpace(ver1.mPos, ver1.mPos);
+		mTransform->TransformToScreenSpace(ver1.mPos);
+
+		mTransform->TransformToProjectSpace(ver2.mPos, ver2.mPos);
+		mTransform->TransformToScreenSpace(ver2.mPos);
+
+		mTransform->TransformToProjectSpace(ver3.mPos, ver3.mPos);
+		mTransform->TransformToScreenSpace(ver3.mPos);
+
+		if (ver1.mPos.y == ver2.mPos.y && ver1.mPos.y == ver3.mPos.y)
+			return;
+
+		DrawLine(ver1, ver2);
+		DrawLine(ver3, ver2);
+		DrawLine(ver1, ver3);
+	}
 }
 
 void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const
 {
-	if (CheckBackCull(v1, v2, v3))
-		return;
-
 	Vertex newv1 = v1;
 	Vertex newv2 = v2;
 	Vertex newv3 = v3;
@@ -306,21 +323,35 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 	//LightShader(newv3, mSky);
 
 	mTransform->TransformToViewSpace(newv1.mPos, v1.mPos);
-	mTransform->TransformToProjectSpace(newv1.mPos, newv1.mPos);
-	mTransform->TransformToScreenSpace(newv1.mPos);
-
 	mTransform->TransformToViewSpace(newv2.mPos, v2.mPos);
-	mTransform->TransformToProjectSpace(newv2.mPos, newv2.mPos);
-	mTransform->TransformToScreenSpace(newv2.mPos);
-
 	mTransform->TransformToViewSpace(newv3.mPos, v3.mPos);
-	mTransform->TransformToProjectSpace(newv3.mPos, newv3.mPos);
-	mTransform->TransformToScreenSpace(newv3.mPos);
 
-	if (newv1.mPos.y == newv2.mPos.y && newv1.mPos.y == newv3.mPos.y)
+	if (CheckBackCull(newv1, newv2, newv3))
 		return;
 
-	FillTriangleHelper(newv1, newv2, newv3);
+	std::vector<Triangle> triangles = FrustumCulling(newv1, newv2, newv3);
+
+	for (int i = 0; i < triangles.size(); i++)
+	{
+		Triangle triangle = triangles[i];
+		Vertex& ver1 = triangle.mVertices[0];
+		Vertex& ver2 = triangle.mVertices[1];
+		Vertex& ver3 = triangle.mVertices[2];
+
+		mTransform->TransformToProjectSpace(ver1.mPos, ver1.mPos);
+		mTransform->TransformToScreenSpace(ver1.mPos);
+
+		mTransform->TransformToProjectSpace(ver2.mPos, ver2.mPos);
+		mTransform->TransformToScreenSpace(ver2.mPos);
+
+		mTransform->TransformToProjectSpace(ver3.mPos, ver3.mPos);
+		mTransform->TransformToScreenSpace(ver3.mPos);
+
+		if (ver1.mPos.y == ver2.mPos.y && ver1.mPos.y == ver3.mPos.y)
+			return;
+
+		FillTriangleHelper(ver1, ver2, ver3);
+	}
 }
 
 void Device::FillTriangleHelper1(Vertex& newv1, Vertex& newv2, Vertex& newv3) const
@@ -331,8 +362,13 @@ void Device::FillTriangleHelper1(Vertex& newv1, Vertex& newv2, Vertex& newv3) co
 	int top = min(y1, y2);
 	int bottom = max(y1, y2);
 
+	if (top >= bottom) return;
+
+	int limittop = max(0, top);
+	int limitbottom = min(mHeight - 1, bottom);
+
 	bool up = newv3.mPos.y < newv1.mPos.y;
-	for (int i = top; i <= bottom; i++)
+	for (int i = limittop; i <= limitbottom; i++)
 	{
 		float lerp = (float)(i - top) / (float)(bottom - top);
 		Vertex vl, vr;
@@ -428,7 +464,7 @@ void Device::FillTriangleHelper(Vertex& newv1, Vertex& newv2, Vertex& newv3) con
 
 void Device::DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const
 {
-	//DrawTriangle(v1, v2, v3);
+	DrawTriangle(v1, v2, v3);
 	//DrawTriangle(v1, v3, v4);
 }
 
@@ -438,13 +474,37 @@ void Device::FillQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3
 	FillTriangle(v1, v3, v4);
 }
 
-void Device::FrustumCulling(const Vertex& v1, const Vertex& v2, const Vertex& v3) const
+std::vector<Triangle> Device::FrustumCullingHelper(const vector<Triangle>& triangles, const Vector4& plane) const
 {
+	vector<Triangle> totaltriangle;
+	for (int i = 0; i < triangles.size(); i++)
+	{
+		vector<Triangle> tgs = ClippingPlane::ClipTriangle(triangles[i], mNearPlane);
+		for (int i = 0; i < tgs.size(); i++)
+			totaltriangle.push_back(tgs[i]);
+	}
 
+	return totaltriangle;
+}
+
+std::vector<Triangle> Device::FrustumCulling(const Vertex& v1, const Vertex& v2, const Vertex& v3) const
+{
+	Triangle triangle;
+	triangle.mVertices.push_back(v1);
+	triangle.mVertices.push_back(v2);
+	triangle.mVertices.push_back(v3);
+
+	vector<Triangle> totaltriangle;
+
+	vector<Triangle> triangles = ClippingPlane::ClipTriangle(triangle, mNearPlane);
+	vector<Triangle> triangles1 = FrustumCullingHelper(triangles, mFarPlane);
+
+	return triangles1;
 }
 
 bool Device::CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3) const
 {
+	if (mBackCull == false) return false;
 	Vector4 vec1 = v2.mPos - v1.mPos;
 	Vector4 vec2 = v3.mPos - v1.mPos;
 	Vector4 normal = Vector4::Cross( vec1, vec2 );
@@ -472,6 +532,12 @@ void Device::MoveCameraForwardOrBackward(float dis)
 	Vector3 forward = (mCamera.mLook - mCamera.mEye).Normorlize();
 	mCamera.mEye = mCamera.mEye + forward * dis;
 	mCamera.mLook = mCamera.mLook + forward * dis;
+
+	//Stream::PrintVector3(mCamera.mEye, "mCamera.mEye");
+	//Stream::PrintVector3(mCamera.mLook, "mCamera.mLook");
+
+	//mCamera.mEye = Vector3(25.4056f, 50.0f, 25.4056f);
+	//mCamera.mLook = Vector3(80.4056f, 50.0f, 80.4056f);
 
 	mTransform->SetView(mCamera);
 	mTransform->UpdateTransform();
