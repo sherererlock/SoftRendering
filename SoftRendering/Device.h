@@ -21,9 +21,9 @@ private:
 
 	Transform*	mTransform;
 	Camera		mCamera;
-	Light		mPoint;
-	Light		mSky;
-	Light		mAmbient;
+	Light		mPointLight;
+	Light		mDirectionalLight;
+	Light		mAmbientLight;
 
 	Vector4		mNearPlane;
 	Vector4		mFarPlane;
@@ -58,7 +58,8 @@ public:
 	void FillQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const;
 	std::vector<Triangle> FrustumCulling(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 	bool CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
-	void LightShader(Vertex& vertex, const Light& light) const;
+	void ShaderVertex(Vertex& v1) const;
+	Vector3 LightShader(const Vertex& vertex, const Light& light) const;
 
 	void MoveCameraForwardOrBackward(float dis);
 	void MoveCameraRightOrLeft(float dis);

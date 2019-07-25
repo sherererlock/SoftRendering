@@ -1,29 +1,40 @@
 #pragma once
 #include "Light.h"
 
-Color Light::CalcDiffuse(const Light& light, const Vertex& vertex)
+Vector3 Light::CalcDiffuse(const Light& light, const Vertex& vertex)
 {
-	Color diff = light.mColor;
-	Vector4 dir = ( light.mPos - vertex.mPos ).Normorlize( );
+	Vector3 diff = light.mIntensity;
+	Vector4 dir;
+	if (light.mType == Light::_Light_Point)
+		dir = (light.mPos - vertex.mPos).Normorlize();
+	else if (light.mType == Light::_Light_Directional)
+		dir = light.mPos;
+
 	float cos = ::fmaxf( Vector4::Dot(vertex.mNormal, dir), 0.0f );
 
 	return diff * cos;
 }
 
-Color Light::CalcSpecular(const Vector4 campos, const Light& light, const Vertex& vertex, float Sharpness)
+Vector3 Light::CalcSpecular(const Vector4 campos, const Light& light, const Vertex& vertex, float sharpness)
 {
-	Color speclur = light.mColor;
+	Vector3 speclur = light.mIntensity;
+
+	Vector4 dir;
+	if (light.mType == Light::_Light_Point)
+		dir = (light.mPos - vertex.mPos).Normorlize();
+	else if (light.mType == Light::_Light_Directional)
+		dir = light.mPos;
+
 	Vector4 v = (campos - vertex.mPos).Normorlize();
-	Vector4 l = (light.mPos - vertex.mPos).Normorlize();
-	Vector4 h = (l + v) / (l + v).Length();
+	Vector4 h = (dir + v) / (dir + v).Length();
 
 	float cos = ::fmaxf(Vector4::Dot(vertex.mNormal, h), 0.0f);
-	float factor = pow(cos, Sharpness);
+	float factor = pow(cos, sharpness);
 
 	return speclur * factor;
 }
 
-Color Light::CalcAmbient(const Light& light, const Vertex& vertex)
+Vector3 Light::CalcAmbient( )
 {
-	return light.mColor;
+	return Vector3(0.1f, 0.1f, 0.1f);
 }

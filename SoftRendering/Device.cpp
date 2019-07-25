@@ -41,14 +41,16 @@ void Device::Init(int w, int h)
 
 	InitPlane();
 
-	mAmbient.mColor = Color(1.0f, 1.0f, 1.0f, 1.0f);
-	mAmbient.mPos = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	mAmbientLight.mIntensity = Vector3(0.1f, 0.1f, 0.1f);
+	mAmbientLight.mType = Light::_Light_Ambient;
 
-	mPoint.mColor = Color(255.0f, 255.0f, 255.0f, 255.0f);
-	mPoint.mPos = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	mPointLight.mIntensity = Vector3(1.0f, 1.0f, 1.0f);
+	mPointLight.mPos = Vector4(50.0f, 100.0f, 50.0f, 1.0f);
+	mPointLight.mType = Light::_Light_Point;
 
-	mSky.mColor = Color(255.0f, 255.0f, 255.0f, 255.0f);
-	mSky.mPos = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	mDirectionalLight.mIntensity = Vector3(0.5f, 0.5f, 0.5f );
+	mDirectionalLight.mPos = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
+	mDirectionalLight.mType = Light::_Light_Directional;
 }
 
 void Device::InitPlane()
@@ -264,14 +266,9 @@ void Device::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 	Vertex newv2 = v2;
 	Vertex newv3 = v3;
 
-	//LightShader(newv1, mPoint);
-	//LightShader(newv1, mSky);
-
-	//LightShader(newv2, mPoint);
-	//LightShader(newv2, mSky);
-
-	//LightShader(newv3, mPoint);
-	//LightShader(newv3, mSky);
+	ShaderVertex(newv1);
+	ShaderVertex(newv2);
+	ShaderVertex(newv3);
 
 	mTransform->TransformToViewSpace(newv2.mPos, v2.mPos);
 	mTransform->TransformToViewSpace(newv3.mPos, v3.mPos);
@@ -313,14 +310,9 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 	Vertex newv2 = v2;
 	Vertex newv3 = v3;
 
-	//LightShader(newv1, mPoint);
-	//LightShader(newv1, mSky);
-
-	//LightShader(newv2, mPoint);
-	//LightShader(newv2, mSky);
-
-	//LightShader(newv3, mPoint);
-	//LightShader(newv3, mSky);
+	ShaderVertex(newv1);
+	ShaderVertex(newv2);
+	ShaderVertex(newv3);
 
 	mTransform->TransformToViewSpace(newv1.mPos, v1.mPos);
 	mTransform->TransformToViewSpace(newv2.mPos, v2.mPos);
@@ -465,7 +457,7 @@ void Device::FillTriangleHelper(Vertex& newv1, Vertex& newv2, Vertex& newv3) con
 void Device::DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const
 {
 	DrawTriangle(v1, v2, v3);
-	//DrawTriangle(v1, v3, v4);
+	DrawTriangle(v1, v3, v4);
 }
 
 void Device::FillQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const
@@ -512,19 +504,34 @@ bool Device::CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3)
 	return normal.z < 0;
 }
 
-void Device::LightShader(Vertex& vertex, const Light& light) const
+void Device::ShaderVertex(Vertex& v1) const
 {
-	Vector4 campos(mCamera.mEye.x, mCamera.mEye.y, mCamera.mEye.z, 1.0f);
-	Color specular = Light::CalcSpecular(campos, light, vertex);
-	Color diffuse = Light::CalcDiffuse(light, vertex);
-	Color ambient = Light::CalcAmbient(light, vertex);
+	Vector3 intensity = LightShader(v1, mDirectionalLight) + LightShader(v1, mPointLight) + LightShader(v1, mAmbientLight);
+	v1.mColor = v1.mColor * intensity;
 
-	vertex.mColor = vertex.mColor * (specular + diffuse + ambient);
+	v1.mColor.r = v1.mColor.r > 255.0f ? 255.0f : v1.mColor.r;
+	v1.mColor.g = v1.mColor.g > 255.0f ? 255.0f : v1.mColor.g;
+	v1.mColor.b = v1.mColor.b > 255.0f ? 255.0f : v1.mColor.b;
+	v1.mColor.a = v1.mColor.a > 255.0f ? 255.0f : v1.mColor.a;
+}
 
-	vertex.mColor.r = vertex.mColor.r > 255.0f ? 255.0f : 255.0f;
-	vertex.mColor.g = vertex.mColor.g > 255.0f ? 255.0f : 255.0f;
-	vertex.mColor.b = vertex.mColor.b > 255.0f ? 255.0f : 255.0f;
-	vertex.mColor.a = vertex.mColor.a > 255.0f ? 255.0f : 255.0f;
+Vector3 Device::LightShader(const Vertex& vertex, const Light& light) const
+{
+	Vector3 intensity;
+	if (light.mType == Light::_Light_Ambient)
+	{
+		intensity = light.mIntensity;
+	}
+	else
+	{
+		Vector4 campos(mCamera.mEye.x, mCamera.mEye.y, mCamera.mEye.z, 1.0f);
+		Vector3 specular = Light::CalcSpecular(campos, light, vertex);
+		Vector3 diffuse = Light::CalcDiffuse(light, vertex);
+
+		intensity = specular + diffuse;
+	}
+
+	return intensity;
 }
 
 void Device::MoveCameraForwardOrBackward(float dis)

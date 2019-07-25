@@ -55,19 +55,45 @@ void DrawHexahedron()
 	v7.mColor = Color(0.0f, 255.0f, 255.0f, 1.0f);
 	v8.mColor = Color(255.0f, 0.0f, 255.0f, 1.0f);
 
-	//device->DrawQuadrangle(v2, v1, v4, v3);
-	//device->DrawQuadrangle(v1, v2, v6, v5);
-	//device->DrawQuadrangle(v4, v1, v5, v8);
-	//device->DrawQuadrangle(v2, v3, v7, v6);
-	device->DrawQuadrangle(v3, v4, v8, v7);
-	//device->DrawQuadrangle(v5, v6, v7, v8);
+	Vector4  plane16, plane27, plane38, plane18, plane13, plane57;
+	plane16 = Vector4(0.0f, 0.0f, -1.0f, 1.0f);
+	plane27 = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+	plane38 = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
+	plane18 = Vector4(-1.0f, 0.0f, 0.0f, 1.0f);
+	plane13 = Vector4(0.0f, -1.0f, 0.0f, 1.0f);
+	plane57 = Vector4(0.0f, 1.0f, 0.0f, 1.0f);
 
-	//device->FillQuadrangle(v2, v1, v4, v3);
-	//device->FillQuadrangle(v1, v2, v6, v5);
-	//device->FillQuadrangle(v4, v1, v5, v8);
-	//device->FillQuadrangle(v2, v3, v7, v6);
-	//device->FillQuadrangle(v3, v4, v8, v7);
-	//device->FillQuadrangle(v5, v6, v7, v8);
+	v1.mNormal = plane16 + plane18 + plane13;
+	v1.mNormal.Normorlize();
+	v2.mNormal = plane27 + plane16 + plane13;
+	v2.mNormal.Normorlize();
+	v3.mNormal = plane27 + plane38 + plane13;
+	v3.mNormal.Normorlize();
+	v4.mNormal = plane38 + plane18 + plane13;
+	v4.mNormal.Normorlize();
+
+	v5.mNormal = plane57 + plane18 + plane13;
+	v5.mNormal.Normorlize();
+	v6.mNormal = plane16 + plane57 + plane27;
+	v6.mNormal.Normorlize();
+	v7.mNormal = plane27 + plane57 + plane18;
+	v7.mNormal.Normorlize();
+	v8.mNormal = plane38 + plane57 + plane18;
+	v8.mNormal.Normorlize();
+
+	device->DrawQuadrangle(v2, v1, v4, v3);
+	device->DrawQuadrangle(v1, v2, v6, v5);
+	device->DrawQuadrangle(v4, v1, v5, v8);
+	device->DrawQuadrangle(v2, v3, v7, v6);
+	device->DrawQuadrangle(v3, v4, v8, v7);
+	device->DrawQuadrangle(v5, v6, v7, v8);
+
+	device->FillQuadrangle(v2, v1, v4, v3);
+	device->FillQuadrangle(v1, v2, v6, v5);
+	device->FillQuadrangle(v4, v1, v5, v8);
+	device->FillQuadrangle(v2, v3, v7, v6);
+	device->FillQuadrangle(v3, v4, v8, v7);
+	device->FillQuadrangle(v5, v6, v7, v8);
 }
 
 int main()

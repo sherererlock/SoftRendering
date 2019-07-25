@@ -1,4 +1,5 @@
 #pragma once
+#include"Vector.h"
 
 class Color
 {
@@ -21,5 +22,10 @@ public:
 	Color operator+ (const Color& color) const
 	{
 		return Color(r + color.r, g + color.g, b + color.b, a + color.a);
+	}
+
+	Color operator* (const Vector3& intesity) const
+	{
+		return Color(r * intesity.x, g * intesity.y, b * intesity.z, a);
 	}
 };
