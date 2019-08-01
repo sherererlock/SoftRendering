@@ -18,6 +18,9 @@ private:
 	DrawBoard* mDrawBoard;
 	int** mFrameBuffer;
 	float* mZBuffer;
+	int** mTextureBuffer;
+	int	mTextureWidth;
+	int mTextureHeight;
 
 	Transform*	mTransform;
 	Camera		mCamera;
@@ -44,6 +47,8 @@ public:
 	inline void SetWireFrame(bool wireframe) { mWireFrame = wireframe; }
 	void Init(int w, int h);
 	void InitPlane();
+	void InitLight();
+	void LoadImageBuffer(std::string resname);
 	void ClearBuffer();
 	void Close();
 	void DrawPoint(const Vector3& point, const Color& color) const;

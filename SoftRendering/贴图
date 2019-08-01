@@ -1,0 +1,5 @@
+贴图
+(u,v)-->>(u(w-1), v(h-1)) range[0, 1], range[w,h]
+线性插值 产生扭曲感
+需要用深度插值
+LoadImageA

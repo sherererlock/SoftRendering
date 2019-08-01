@@ -40,17 +40,7 @@ void Device::Init(int w, int h)
 	mTransform->UpdateTransform();
 
 	InitPlane();
-
-	mAmbientLight.mIntensity = Vector3(0.1f, 0.1f, 0.1f);
-	mAmbientLight.mType = Light::_Light_Ambient;
-
-	mPointLight.mIntensity = Vector3(1.0f, 1.0f, 1.0f);
-	mPointLight.mPos = Vector4(50.0f, 100.0f, 50.0f, 1.0f);
-	mPointLight.mType = Light::_Light_Point;
-
-	mDirectionalLight.mIntensity = Vector3(0.5f, 0.5f, 0.5f );
-	mDirectionalLight.mPos = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
-	mDirectionalLight.mType = Light::_Light_Directional;
+	InitLight();
 }
 
 void Device::InitPlane()
@@ -68,6 +58,48 @@ void Device::InitPlane()
 	// top plane
 
 	// bottom plane
+}
+
+void Device::InitLight()
+{
+	mAmbientLight.mIntensity = Vector3(0.1f, 0.1f, 0.1f);
+	mAmbientLight.mType = Light::_Light_Ambient;
+
+	mPointLight.mIntensity = Vector3(1.0f, 1.0f, 1.0f);
+	mPointLight.mPos = Vector4(50.0f, 100.0f, 50.0f, 1.0f);
+	mPointLight.mType = Light::_Light_Point;
+
+	mDirectionalLight.mIntensity = Vector3(1.0f, 1.0f, 1.0f);
+	mDirectionalLight.mPos = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
+	mDirectionalLight.mType = Light::_Light_Directional;
+}
+
+void Device::LoadImageBuffer(std::string resname)
+{
+	if (mTextureBuffer == NULL)
+	{
+		mTextureBuffer = new int *[mTextureHeight];
+		for (int i = 0; i < mTextureHeight; i++)
+		{
+			mTextureBuffer[i] = new int[mTextureWidth];
+			//memset(mTextureBuffer, 0, mTextureWidth);
+		}
+	}
+	
+	HBITMAP bitmap = (HBITMAP)LoadImageA(NULL, resname.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	HDC hdc = CreateCompatibleDC(NULL);
+	SelectObject(hdc, bitmap);
+	for (int i = 0; i < mTextureHeight; i++)
+	{
+		for (int j = 0; j < mTextureWidth; j++)
+		{
+			COLORREF color = GetPixel(hdc, i, j);
+			int r = color % 256;
+			int g = (color >> 8) % 256;
+			int b = (color >> 16) % 256;
+			mTextureBuffer[i][j] = (r << 16) | (g << 8) | (b);
+		}
+	}
 }
 
 void Device::ClearBuffer()

@@ -129,11 +129,11 @@ int main()
 		}
 		else if (device->GetDrawBoard()->IsKeyDown(81))
 		{
-			device->MoveCameraUpOrDown(0.1f);
+			device->MoveCameraUpOrDown(0.5f);
 		}
 		else if (device->GetDrawBoard()->IsKeyDown(69))
 		{
-			device->MoveCameraUpOrDown(-0.1f);
+			device->MoveCameraUpOrDown(-0.5f);
 		}
 
 		device->ClearBuffer();

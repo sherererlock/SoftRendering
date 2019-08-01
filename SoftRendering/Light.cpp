@@ -33,8 +33,3 @@ Vector3 Light::CalcSpecular(const Vector4 campos, const Light& light, const Vert
 
 	return speclur * factor;
 }
-
-Vector3 Light::CalcAmbient( )
-{
-	return Vector3(0.1f, 0.1f, 0.1f);
-}
