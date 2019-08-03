@@ -41,6 +41,9 @@ void Device::Init(int w, int h)
 
 	InitPlane();
 	InitLight();
+
+	mDrawObject = 1;
+	LoadImageBuffer("newt.bmp");
 }
 
 void Device::InitPlane()
@@ -62,11 +65,11 @@ void Device::InitPlane()
 
 void Device::InitLight()
 {
-	mAmbientLight.mIntensity = Vector3(0.1f, 0.1f, 0.1f);
+	mAmbientLight.mIntensity = Vector3(0.5f, 0.5f, 0.5f);
 	mAmbientLight.mType = Light::_Light_Ambient;
 
 	mPointLight.mIntensity = Vector3(1.0f, 1.0f, 1.0f);
-	mPointLight.mPos = Vector4(50.0f, 100.0f, 50.0f, 1.0f);
+	mPointLight.mPos = Vector4(50.0f, 200.0f, 50.0f, 1.0f);
 	mPointLight.mType = Light::_Light_Point;
 
 	mDirectionalLight.mIntensity = Vector3(1.0f, 1.0f, 1.0f);
@@ -76,30 +79,64 @@ void Device::InitLight()
 
 void Device::LoadImageBuffer(std::string resname)
 {
-	if (mTextureBuffer == NULL)
+	if (mTextureBuffer != NULL)
 	{
-		mTextureBuffer = new int *[mTextureHeight];
 		for (int i = 0; i < mTextureHeight; i++)
-		{
-			mTextureBuffer[i] = new int[mTextureWidth];
-			//memset(mTextureBuffer, 0, mTextureWidth);
-		}
+			delete mTextureBuffer[i];
+
+		delete mTextureBuffer;
+
+		mTextureBuffer = NULL;
 	}
-	
+
 	HBITMAP bitmap = (HBITMAP)LoadImageA(NULL, resname.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	if (bitmap == NULL)
+	{
+		Stream::PrintInfo("Load image:" + resname + " failed");
+		return;
+	}
+
 	HDC hdc = CreateCompatibleDC(NULL);
+
+	BITMAP bmp;
+	GetObject(bitmap, sizeof(BITMAP), &bmp);
+	mTextureHeight = bmp.bmHeight;
+	mTextureWidth = bmp.bmWidth;
+
+	mTextureBuffer = new int *[mTextureHeight];
+	for (int i = 0; i < mTextureHeight; i++)
+		mTextureBuffer[i] = new int[mTextureWidth];
+
 	SelectObject(hdc, bitmap);
 	for (int i = 0; i < mTextureHeight; i++)
 	{
 		for (int j = 0; j < mTextureWidth; j++)
 		{
 			COLORREF color = GetPixel(hdc, i, j);
-			int r = color % 256;
-			int g = (color >> 8) % 256;
-			int b = (color >> 16) % 256;
+			int r = color % 255;
+			int g = (color >> 8) % 255;
+			int b = (color >> 16) % 255;
 			mTextureBuffer[i][j] = (r << 16) | (g << 8) | (b);
 		}
 	}
+}
+
+void Device::Sampling(Vertex& vertex) const
+{
+	if (mTextureBuffer == NULL || IsTextureEnabled( ) == false )
+		return;
+
+	Vector2 uv = vertex.mTextureUV;
+	int x = (int)( uv.x * (mTextureWidth - 1) );
+	int y = (int)( uv.y * (mTextureHeight - 1) );
+
+	int color = mTextureBuffer[y][x];
+	//Stream::PrintVector2(vertex.mTextureUV, "uv");
+	//Stream::PrintVector2(Vector2(x, y), "Position");
+	vertex.mColor.r = _GET_RED(color);
+	vertex.mColor.g = _GET_GREEN(color);
+	vertex.mColor.b = _GET_BLUE(color);
+	vertex.mColor.a = 1.0f;
 }
 
 void Device::ClearBuffer()
@@ -177,6 +214,7 @@ void Device::DrawLine(const Vertex& start, const Vertex& end) const
 		{
 			float lerp = (i - left.mPos.x) / (right.mPos.x - left.mPos.x);
 			Vertex vertex = Vertex::VertexLerp(left, right, lerp);
+			Sampling(vertex);
 			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z ) , vertex.mColor);
 		}
 	}
@@ -189,6 +227,7 @@ void Device::DrawLine(const Vertex& start, const Vertex& end) const
 		{
 			float lerp = (i - down.mPos.y) / (up.mPos.y - down.mPos.y);
 			Vertex vertex = Vertex::VertexLerp(down, up, lerp);
+			Sampling(vertex);
 			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z), vertex.mColor);
 		}
 	}
@@ -538,6 +577,9 @@ bool Device::CheckBackCull(const Vertex& v1, const Vertex& v2, const Vertex& v3)
 
 void Device::ShaderVertex(Vertex& v1) const
 {
+	if (IsLightingEnabled() == false)
+		return;
+
 	Vector3 intensity = LightShader(v1, mDirectionalLight) + LightShader(v1, mPointLight) + LightShader(v1, mAmbientLight);
 	v1.mColor = v1.mColor * intensity;
 

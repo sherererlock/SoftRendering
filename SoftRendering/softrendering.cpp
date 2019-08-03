@@ -9,18 +9,23 @@ void DrawTriangle()
 	Vertex v1, v2, v3;
 	v1.mPos = Vector4( 100.0f, 0.0f, 0.0f, 1.0f );
 	v1.mColor = Color( 255.0f, 0.0f, 0.0f, 1.0f );
+	v1.mTextureUV = Vector2(1.0f, 1.0f);
+
 	v2.mPos = Vector4( 0.0f, 0.0f, 100.0f, 1.0f );
 	v2.mColor = Color( 0.0f, 255.0f, 0.0f, 1.0f );
+	v2.mTextureUV = Vector2(0.0f,1.0f);
+
 	v3.mPos = Vector4( 50.0f, 100.0f, 50.0f, 1.0f );
 	v3.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
+	v3.mTextureUV = Vector2(0.5f, 0.0f);
 
-	Vertex v4, v5, v6;
-	v4.mPos = Vector4(80.0f, 0.0f, 0.0f, 1.0f);
-	v4.mColor = Color(0.0f, 255.0f, 0.0f, 1.0f);
-	v5.mPos = Vector4(0.0f, 0.0f, 80.0f, 1.0f);
-	v5.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
-	v6.mPos = Vector4(50.0f, 100.0f, 50.0f, 1.0f);
-	v6.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
+	//Vertex v4, v5, v6;
+	//v4.mPos = Vector4(80.0f, 0.0f, 0.0f, 1.0f);
+	//v4.mColor = Color(0.0f, 255.0f, 0.0f, 1.0f);
+	//v5.mPos = Vector4(0.0f, 0.0f, 80.0f, 1.0f);
+	//v5.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
+	//v6.mPos = Vector4(50.0f, 100.0f, 50.0f, 1.0f);
+	//v6.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
 
 	//v1.mPos = Vector4( 50.0f, 0.0f, 50.0f, 1.0f );
 	//v1.mColor = Color( 255.0f, 0.0f, 0.0f, 1.0f );
@@ -100,12 +105,7 @@ int main()
 {
 	device = new Device();
 	device->Init(800, 600);
-	Vertex startp;
-	startp.mColor = Color(255.0f, 0.0f, 0.0f, 255.0f);
-	Vertex endp;
-	endp.mColor = Color(0.f, 0.f, 0.f, 255);
 
-	float y = 450.5f;
 	while (true)
 	{
 		if (device->GetDrawBoard( )->IsKeyDown(VK_ESCAPE))
@@ -135,11 +135,38 @@ int main()
 		{
 			device->MoveCameraUpOrDown(-0.5f);
 		}
+		// Lighting key number 1
+		else if (device->GetDrawBoard()->IsKeyDown(1 + 48))
+		{
+			bool light = device->IsLightingEnabled();
+			device->EnableLight(!light);
+		}
+		// Texture key number 2
+		else if (device->GetDrawBoard()->IsKeyDown(2 + 48))
+		{
+			bool texture = device->IsTextureEnabled();
+			device->EnableTexture(!texture);
+		}
+		// Draw Triangle
+		else if ( device->GetDrawBoard()->IsKeyDown(3+48))
+		{
+			device->LoadImageBuffer("newt.bmp");
+			device->SetDrawObject(1);
+		}
+		// Draw Cube
+		else if (device->GetDrawBoard()->IsKeyDown(4 + 48))
+		{
+			device->LoadImageBuffer("newt.bmp");
+			device->EnableTexture(false);
+			device->SetDrawObject(2);
+		}
 
 		device->ClearBuffer();
 
-		//DrawTriangle();
-		DrawHexahedron();
+		if (device->GetDrawObject( ) == 1)
+			DrawTriangle();
+		else if (device->GetDrawObject() == 2)
+			DrawHexahedron();
 
 		device->GetDrawBoard()->Update();
 	}
