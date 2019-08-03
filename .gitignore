@@ -66,3 +66,5 @@ SoftRendering/SoftRendering.vcxproj
 *.filters
 *.filters
 *.ipch
+x64/Debug/traingle.jpg
+x64/traingle.jpg
