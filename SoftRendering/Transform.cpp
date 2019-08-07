@@ -48,14 +48,11 @@ void Transform::TransformToProjectSpace(Vector4& vout, const Vector4& vin)
 	Matrix4D::MulRight(vout, vin, mProject);
 }
 
-//×ª»»µ½NDC¿Õ¼ä
 void Transform::TransformToScreenSpace(Vector4 &v1)
 {
-	//std::cout <<  v1.x << "!" << v1.y << "!" << v1.z<< "!" << v1.w << "\n";
 	float w = 1.0f / v1.w;
 	v1.x = (v1.x * w + 1.0f) * mWidth * 0.5f;
 	v1.y = (-v1.y * w + 1.0f) * mHeight * 0.5f;
 	v1.z *= w;
 	v1.w = 1.0f;
-	//std::cout << "@@" << v1.x << "@@" << v1.y << "@@" << v1.z << "@@"<< v1.w << "\n";
 }

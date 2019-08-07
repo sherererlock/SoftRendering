@@ -116,7 +116,10 @@ void Device::LoadImageBuffer(std::string resname)
 			int r = color % 255;
 			int g = (color >> 8) % 255;
 			int b = (color >> 16) % 255;
-			mTextureBuffer[i][j] = (r << 16) | (g << 8) | (b);
+			_SET_RED(mTextureBuffer[i][j], r);
+			_SET_GREEN(mTextureBuffer[i][j], g);
+			_SET_BLUE(mTextureBuffer[i][j], b);
+			//mTextureBuffer[i][j] = (r << 16) | (g << 8) | (b);
 		}
 	}
 }
