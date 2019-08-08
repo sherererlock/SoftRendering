@@ -105,7 +105,7 @@ int main()
 {
 	device = new Device();
 	device->Init(800, 600);
-
+	device->EnableTexture(true);
 	while (true)
 	{
 		if (device->GetDrawBoard( )->IsKeyDown(VK_ESCAPE))

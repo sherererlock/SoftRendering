@@ -26,9 +26,8 @@ public:
 		v.mColor.r = v1.mColor.r + lerp * (v2.mColor.r - v1.mColor.r);
 		v.mColor.g = v1.mColor.g + lerp * (v2.mColor.g - v1.mColor.g);
 		v.mColor.b = v1.mColor.b + lerp * (v2.mColor.b - v1.mColor.b);
-	
-		float z = 1 / v.mPos.z;
-		v.mTextureUV.x = v.mPos.z;
+		v.mTextureUV.x = v1.mTextureUV.x + lerp * (v2.mTextureUV.x - v1.mTextureUV.x);
+		v.mTextureUV.y = v1.mTextureUV.y + lerp * (v2.mTextureUV.y - v1.mTextureUV.y);
 
 		//v.mNormal = v1.mNormal + v2.mNormal * lerp;
 
