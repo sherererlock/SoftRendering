@@ -42,8 +42,8 @@ void Device::Init(int w, int h)
 	InitPlane();
 	InitLight();
 
-	mDrawObject = 1;
-	LoadImageBuffer("newt.bmp");
+	mDrawObject = 2;
+	LoadImageBuffer("test1.bmp");
 }
 
 void Device::InitPlane()
@@ -189,16 +189,6 @@ void Device::DrawPoint(const Vector3& point, const Color& color) const
 	mFrameBuffer[y][x] = r << 16 | g << 8 | b;
 }
 
-void Device::DrawPoint3D(const Vector3& point, const Color& color) const
-{
-	Vector4 v;
-	mTransform->TransformToProjectSpace(v, Vector4(point.x, point.y, point.z, 1.0f));
-	mTransform->TransformToScreenSpace(v);
-
-	//Stream::PrintVector3(Vector3(v.x, v.y, v.z), "3dpoint");
-	DrawPoint(Vector3(v.x, v.y, v.z), color);
-}
-
 void Device::DrawLine(const Vertex& start, const Vertex& end) const
 {
 	Vector4 sp = start.mPos;
@@ -235,100 +225,59 @@ void Device::DrawLine(const Vertex& start, const Vertex& end) const
 	}
 }
 
-// a  bug function
-void Device::DrawLineDDA(const Vertex& start, const Vertex& end) const
+std::vector<int> Device::Interpolate(int i0, int d0, int i1, int d1) const
+{
+	std::vector<int> values;
+	if (i0 == i1)
+	{
+		values.push_back(d0);
+		return values;
+	}
+
+	int a = (d1 - d0) / (i1 - i0);
+	int d = d0;
+	for (int i = i0; i <= i1; i++)
+	{
+		values.push_back(d0);
+		d += a;
+	}
+}
+
+void Device::DrawLineWithInterpolation(const Vertex& start, const Vertex& end) const
 {
 	Vector4 sp = start.mPos;
 	Vector4 ep = end.mPos;
 
-	if (sp.x == ep.x && sp.y == ep.y)
-		return;
+	float dx = abs(ep.x - sp.x);
+	float dy = abs(ep.y - sp.y);
 
-	Color sc = start.mColor;
-	Color ec = end.mColor;
-
-	float r = ec.r - sc.r;
-	float g = ec.g - sc.g;
-	float b = ec.b - sc.b;
-	float a = ec.a - sc.a;
-
-	float z = ep.z - sp.z;
-
-	float x = sp.x;
-	float y = sp.y;
-
-	if (sp.x == ep.x)
+	if (dx > dy)
 	{
-		float deltay = sp.y > ep.y ? -1.0f : 1.0f;
-		int steps = abs(Round(sp.y - ep.y));
+		const Vertex& left = (ep.x > sp.x) ? start : end;
+		const Vertex& right = (ep.x > sp.x) ? end : start;
 
-		float deltar = r / steps;
-		float deltag = g / steps;
-		float deltab = b / steps;
-		float deltaa = a / steps;
-
-		float deltaz = z / steps;
-
-		for (int i = 0; i < steps; i++)
-		{ 
-			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltab * i, sc.a + deltaa * i);
-			float pointz = sp.z + deltaz * i;
-			DrawPoint(Vector3(x, y, pointz), color);
-			y += deltay;
-			if (y < 0 || y > mHeight)
-				break;
-		}
-
-		return;
-	}
-
-	float k = (sp.y - ep.y) / (sp.x - ep.x);
-	if (abs(k) <= 1)
-	{
-		int steps = abs(Round(sp.x - ep.x));
-		float deltax = sp.x > ep.x ? -1 : 1;
-
-		float deltar = r / steps;
-		float deltag = g / steps;
-		float deltab = b / steps;
-		float deltaa = a / steps;
-
-		float deltaz = z / steps;
-
-		for (int i = 0; i < steps; i++)
+		std::vector<int> yvalues = Interpolate((int)left.mPos.x, (int)left.mPos.y, (int)right.mPos.x, (int)right.mPos.x);
+		for (int i = left.mPos.x; i < right.mPos.x; i++)
 		{
-			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltab * i, sc.a + deltaa * i);
-			float pointz = sp.z + deltaz * i;
-			DrawPoint(Vector3(x, y, pointz), color);
-			x += deltax;
-			y += k * deltax;
-
-			if (x< 0 || x > mWidth || y < 0 || y > mHeight)
-				break;
+			float lerp = (i - left.mPos.x) / (right.mPos.x - left.mPos.x);
+			Vertex vertex = Vertex::VertexLerp(left, right, lerp);
+			Sampling(vertex);
+			vertex.mPos.y = yvalues[i - (int)left.mPos.x];
+			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z), vertex.mColor);
 		}
 	}
 	else
 	{
-		int steps = abs(Round(sp.y - ep.y));
-		float deltay = sp.y > ep.y ? -1 : 1;
-
-		float deltar = r / steps;
-		float deltag = g / steps;
-		float deltab = b / steps;
-		float deltaa = a / steps;
-
-		float deltaz = z / steps;
-
-		for (int i = 0; i <= steps; i++)
+		const Vertex& down = (ep.y > sp.y) ? start : end;
+		const Vertex& up = (ep.y > sp.y) ? end : start;
+		std::vector<int> xvalues = Interpolate((int)down.mPos.x, (int)down.mPos.y, (int)up.mPos.x, (int)up.mPos.x);
+		for (int i = down.mPos.y; i < up.mPos.y; i++)
 		{
-			Color color(sc.r + deltar * i, sc.g + deltag * i, sc.b + deltab * i, sc.a + deltaa * i);
-			float pointz = sp.z + deltaz * i;
-			DrawPoint(Vector3(x, y, pointz), color);
-			x += deltay / k;
-			y += deltay;
-
-			if (x< 0 || x > mWidth || y < 0 || y > mHeight)
-				break;
+			float lerp = (i - down.mPos.y) / (up.mPos.y - down.mPos.y);
+			Vertex vertex = Vertex::VertexLerp(down, up, lerp);
+			Sampling(vertex);
+			vertex.mPos.x = xvalues[i - (int)down.mPos.y];
+			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z), vertex.mColor);
 		}
 	}
 }
@@ -397,6 +346,16 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 	if (CheckBackCull(newv1, newv2, newv3))
 		return;
 
+	newv1.mTextureUV.x = 0.0f;
+	newv1.mTextureUV.y = 1.0f;
+
+	newv2.mTextureUV.x = 1.0f;
+	newv2.mTextureUV.y = 1.0f;
+
+	newv3.mTextureUV.x = 1.0f;
+	newv3.mTextureUV.y = 0.0f;
+
+
 	std::vector<Triangle> triangles = FrustumCulling(newv1, newv2, newv3);
 
 	for (int i = 0; i < triangles.size(); i++)
@@ -441,15 +400,16 @@ void Device::FillTriangleHelper1(Vertex& newv1, Vertex& newv2, Vertex& newv3) co
 	bool up = newv3.mPos.y < newv1.mPos.y;
 	for (int i = limittop; i <= limitbottom; i++)
 	{
-		float lerp = (float)(i - top) / (float)(bottom - top);
 		Vertex vl, vr;
 		if (up)
 		{
+			float lerp = (float)(i - top) / (float)(bottom - top);
 			vl = Vertex::VertexLerp(newv3, newv1, lerp);
 			vr = Vertex::VertexLerp(newv3, newv2, lerp);
 		}
 		else
 		{
+			float lerp = (float)(bottom - i) / (float)(bottom - top);
 			vl = Vertex::VertexLerp(newv1, newv3, lerp);
 			vr = Vertex::VertexLerp(newv2, newv3, lerp);
 		}
@@ -533,6 +493,11 @@ void Device::FillTriangleHelper(Vertex& newv1, Vertex& newv2, Vertex& newv3) con
 	}
 }
 
+void Device::DrawFillTriangle(Vertex& v1, Vertex& v2, Vertex& v3) const
+{
+	
+}
+
 void Device::DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const
 {
 	DrawTriangle(v1, v2, v3);
@@ -542,7 +507,7 @@ void Device::DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3
 void Device::FillQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const
 {
 	FillTriangle(v1, v2, v3);
-	FillTriangle(v1, v3, v4);
+	//FillTriangle(v1, v3, v4);
 }
 
 std::vector<Triangle> Device::FrustumCullingHelper(const vector<Triangle>& triangles, const Vector4& plane) const

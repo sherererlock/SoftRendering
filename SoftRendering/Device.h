@@ -101,13 +101,14 @@ public:
 	void ClearBuffer();
 	void Close();
 	void DrawPoint(const Vector3& point, const Color& color) const;
-	void DrawPoint3D(const Vector3& point, const Color& color) const;
 	void DrawLine(const Vertex& start, const Vertex& end) const;
-	void DrawLineDDA(const Vertex& start, const Vertex& end) const;
+	std::vector<int> Interpolate(int i0, int d0, int i1, int d1) const;
+	void DrawLineWithInterpolation(const Vertex& start, const Vertex& end) const;
 	void DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 	void FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 	void FillTriangleHelper(Vertex& v1, Vertex& v2, Vertex& v3) const;
 	void FillTriangleHelper1(Vertex& v1, Vertex& v2, Vertex& v3) const;
+	void DrawFillTriangle(Vertex& v1, Vertex& v2, Vertex& v3)const;
 	void DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const;
 	void FillQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const;
 	std::vector<Triangle> FrustumCulling(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
