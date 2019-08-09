@@ -16,6 +16,11 @@ void Stream::PrintVector3(const Vector3& v, std::string tag)
 	std::cout << tag.c_str() << " ( " << v.x << ", " << v.y << ", " << v.z << " )" << std::endl;
 }
 
+void Stream::PrintVector4(const Vector4& v, std::string tag)
+{
+	std::cout << tag.c_str() << " ( " << v.x << ", " << v.y << ", " << v.z << "," << v.w << " )" << std::endl;
+}
+
 void Stream::PrintMatrix4D(const Matrix4D& mat, std::string tag)
 {
 	std::cout << tag.c_str() << std::endl;

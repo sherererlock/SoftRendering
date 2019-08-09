@@ -111,16 +111,7 @@ void Device::LoadImageBuffer(std::string resname)
 	for (int i = 0; i < mTextureHeight; i++)
 	{
 		for (int j = 0; j < mTextureWidth; j++)
-		{
-			COLORREF color = GetPixel(hdc, i, j);
-			int r = color % 255;
-			int g = (color >> 8) % 255;
-			int b = (color >> 16) % 255;
-			//_SET_RED(mTextureBuffer[i][j], r);
-			//_SET_GREEN(mTextureBuffer[i][j], g);
-			//_SET_BLUE(mTextureBuffer[i][j], b);
-			mTextureBuffer[i][j] = (r << 16) | (g << 8) | (b);
-		}
+			mTextureBuffer[i][j] = GetPixel(hdc, i, j);
 	}
 }
 
@@ -130,15 +121,23 @@ void Device::Sampling(Vertex& vertex) const
 		return;
 
 	Vector2 uv = vertex.mTextureUV;
-	int x = (int)( uv.x * (mTextureWidth - 1) );
-	int y = (int)( uv.y * (mTextureHeight - 1) );
+	float z = 1.0f / vertex.mReciprocalOfZ;
+	int x = (int)( uv.x * z * (mTextureWidth - 1) );
+	int y = (int)( uv.y * z * (mTextureHeight - 1) );
+
+	y = y >= mTextureHeight ? (mTextureHeight - 1) : y;
+	y = y < 0 ? 0 : y;
+
+	x = x >= mTextureWidth ? (mTextureWidth - 1) : x;
+	x = x < 0 ? 0 : x;
 
 	int color = mTextureBuffer[y][x];
 	//Stream::PrintVector2(vertex.mTextureUV, "uv");
-	//Stream::PrintVector2(Vector2(x, y), "Position");
-	vertex.mColor.r = _GET_RED(color);
-	vertex.mColor.g = _GET_GREEN(color);
-	vertex.mColor.b = _GET_BLUE(color);
+	//Stream::PrintVector2(Vector2(y, x), "UVPosition");
+	//Stream::PrintVector4(vertex.mPos, "vertext Position");
+	vertex.mColor.r = GetRValue(color);
+	vertex.mColor.g = GetGValue(color);
+	vertex.mColor.b = GetBValue(color);
 	vertex.mColor.a = 1.0f;
 }
 
@@ -361,12 +360,15 @@ void Device::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 		Vertex& ver3 = triangle.mVertices[2];
 
 		mTransform->TransformToProjectSpace(ver1.mPos, ver1.mPos);
+		ver1.PrepareTextureUV();
 		mTransform->TransformToScreenSpace(ver1.mPos);
 
 		mTransform->TransformToProjectSpace(ver2.mPos, ver2.mPos);
+		ver2.PrepareTextureUV();
 		mTransform->TransformToScreenSpace(ver2.mPos);
 
 		mTransform->TransformToProjectSpace(ver3.mPos, ver3.mPos);
+		ver3.PrepareTextureUV();
 		mTransform->TransformToScreenSpace(ver3.mPos);
 
 		if (ver1.mPos.y == ver2.mPos.y && ver1.mPos.y == ver3.mPos.y)
@@ -405,12 +407,15 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 		Vertex& ver3 = triangle.mVertices[2];
 
 		mTransform->TransformToProjectSpace(ver1.mPos, ver1.mPos);
+		ver1.PrepareTextureUV();
 		mTransform->TransformToScreenSpace(ver1.mPos);
 
 		mTransform->TransformToProjectSpace(ver2.mPos, ver2.mPos);
+		ver2.PrepareTextureUV();
 		mTransform->TransformToScreenSpace(ver2.mPos);
 
 		mTransform->TransformToProjectSpace(ver3.mPos, ver3.mPos);
+		ver3.PrepareTextureUV();
 		mTransform->TransformToScreenSpace(ver3.mPos);
 
 		if (ver1.mPos.y == ver2.mPos.y && ver1.mPos.y == ver3.mPos.y)
@@ -559,8 +564,6 @@ std::vector<Triangle> Device::FrustumCulling(const Vertex& v1, const Vertex& v2,
 	triangle.mVertices.push_back(v1);
 	triangle.mVertices.push_back(v2);
 	triangle.mVertices.push_back(v3);
-
-	vector<Triangle> totaltriangle;
 
 	vector<Triangle> triangles = ClippingPlane::ClipTriangle(triangle, mNearPlane);
 	vector<Triangle> triangles1 = FrustumCullingHelper(triangles, mFarPlane);

@@ -39,6 +39,12 @@ void DrawTriangle()
 	//device->FillTriangle(v4, v5, v6);
 }
 
+void InitTexture(Vertex &ve, float u, float v)
+{
+	ve.mTextureUV.x = u;
+	ve.mTextureUV.y = v;
+}
+
 void DrawHexahedron()
 {
 	Vertex v1, v2, v3, v4, v5, v6, v7, v8;
@@ -59,6 +65,15 @@ void DrawHexahedron()
 	v6.mColor = Color(255.0f, 255.0f, 0.0f, 1.0f);
 	v7.mColor = Color(0.0f, 255.0f, 255.0f, 1.0f);
 	v8.mColor = Color(255.0f, 0.0f, 255.0f, 1.0f);
+
+	InitTexture(v1, 0.0f, 0.0f);
+	InitTexture(v2, 1.0f, 0.0f);
+	InitTexture(v3, 1.0f, 1.0f);
+	InitTexture(v4, 0.0f, 1.0f);
+	InitTexture(v5, 0.0f, 0.0f);
+	InitTexture(v6, 1.0f, 0.0f);
+	InitTexture(v7, 1.0f, 1.0f);
+	InitTexture(v8, 0.0f, 1.0f);
 
 	Vector4  plane16, plane27, plane38, plane18, plane13, plane57;
 	plane16 = Vector4(0.0f, 0.0f, -1.0f, 1.0f);
@@ -150,14 +165,14 @@ int main()
 		// Draw Triangle
 		else if ( device->GetDrawBoard()->IsKeyDown(3+48))
 		{
-			device->LoadImageBuffer("newt.bmp");
+			device->LoadImageBuffer("affair.bmp");
 			device->SetDrawObject(1);
 		}
 		// Draw Cube
 		else if (device->GetDrawBoard()->IsKeyDown(4 + 48))
 		{
-			device->LoadImageBuffer("newt.bmp");
-			device->EnableTexture(false);
+			device->LoadImageBuffer("test1.bmp");
+			device->EnableTexture(true);
 			device->SetDrawObject(2);
 		}
 
