@@ -344,8 +344,8 @@ std::vector<Vertex> Device::Interpolate(const Vertex& v1, const Vertex& v2) cons
 	const Vertex& topv = v1.mPos.y < v2.mPos.y ? v1 : v2;
 	const Vertex& bottomv = v1.mPos.y > v2.mPos.y ? v1 : v2;
 
-	int y1 = (int)(v1.mPos.y + 0.5f);
-	int y2 = (int)(v2.mPos.y + 0.5f);
+	int y1 = (int)(v1.mPos.y);
+	int y2 = (int)(v2.mPos.y);
 
 	int top = min(y1, y2);
 	int bottom = max(y1, y2);
@@ -376,15 +376,15 @@ void Device::FillTriangleHelper(Vertex v1, Vertex v2, Vertex v3) const
 	if (v2.mPos.y > v3.mPos.y)
 		SwapVertex(v2, v3);
 
-	std::vector<Vertex> longsides = Interpolate(v1, v3);
 	std::vector<Vertex> shortside1 = Interpolate(v1, v2);
 	std::vector<Vertex> shortside2 = Interpolate(v2, v3);
+	std::vector<Vertex> longsides = Interpolate(v1, v3);
 
 	if (longsides.size() == 0)
 		return;
 
-	if (shortside2.size()>=1)
-		shortside2.pop_back();
+	if (shortside1.size()>=1)
+		shortside1.pop_back();
 	shortside1.insert(shortside1.end(), shortside2.begin(), shortside2.end());
 
 	if (shortside1.size() != longsides.size())
@@ -397,6 +397,8 @@ void Device::FillTriangleHelper(Vertex v1, Vertex v2, Vertex v3) const
 	{
 		Vertex& left = leftp.at(i);
 		Vertex& right = rightp.at(i);
+		//Stream::PrintVector2(Vector2((int)left.mPos.x, (int)left.mPos.y), "left");
+		//Stream::PrintVector2(Vector2((int)right.mPos.x, (int)right.mPos.y), "right");
 
 		for (int j = left.mPos.x; j < right.mPos.x; j++)
 		{
@@ -416,7 +418,7 @@ void Device::DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3
 
 void Device::FillQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const
 {
-	//FillTriangle(v1, v2, v3);
+	FillTriangle(v1, v2, v3);
 	FillTriangle(v1, v3, v4);
 }
 

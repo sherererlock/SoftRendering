@@ -8,7 +8,7 @@ void Stream::PrintInfo(std::string tag)
 
 void Stream::PrintVector2(const Vector2& v, std::string tag)
 {
-	std::cout << tag.c_str() << " ( " << v.x << ", " << v.y << ", " <<" )" << std::endl;
+	std::cout << tag.c_str() << " ( " << v.x << ", " << v.y <<" )" << std::endl;
 }
 
 void Stream::PrintVector3(const Vector3& v, std::string tag)
