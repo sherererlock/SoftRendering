@@ -99,8 +99,8 @@ void Device::LoadImageBuffer(std::string resname)
 
 	BITMAP bmp;
 	GetObject(bitmap, sizeof(BITMAP), &bmp);
-	mTextureHeight = bmp.bmHeight;
-	mTextureWidth = bmp.bmWidth;
+	mTextureHeight = bmp.bmWidth;
+	mTextureWidth = bmp.bmHeight;
 
 	mTextureBuffer = new int *[mTextureHeight];
 	for (int i = 0; i < mTextureHeight; i++)
@@ -114,30 +114,13 @@ void Device::LoadImageBuffer(std::string resname)
 	}
 }
 
-void Device::Sampling(Vertex& vertex) const
+void Device::DrawImageBuffer() const
 {
-	if (mTextureBuffer == NULL || IsTextureEnabled( ) == false )
-		return;
-
-	Vector2 uv = vertex.mTextureUV;
-	float z = 1.0f / vertex.mReciprocalOfZ;
-	int x = (int)( uv.x * z * (mTextureWidth - 1) );
-	int y = (int)( uv.y * z * (mTextureHeight - 1) );
-
-	y = y >= mTextureHeight ? (mTextureHeight - 1) : y;
-	y = y < 0 ? 0 : y;
-
-	x = x >= mTextureWidth ? (mTextureWidth - 1) : x;
-	x = x < 0 ? 0 : x;
-
-	int color = mTextureBuffer[y][x];
-	//Stream::PrintVector2(vertex.mTextureUV, "uv");
-	//Stream::PrintVector2(Vector2(y, x), "UVPosition");
-	//Stream::PrintVector4(vertex.mPos, "vertext Position");
-	vertex.mColor.r = GetRValue(color);
-	vertex.mColor.g = GetGValue(color);
-	vertex.mColor.b = GetBValue(color);
-	vertex.mColor.a = 1.0f;
+	for (int i = 0; i < mTextureHeight; i++)
+	{
+		for (int j = 0; j < mTextureWidth; j++)
+			mFrameBuffer[i][j] = mTextureBuffer[i][j];
+	}
 }
 
 void Device::ClearBuffer()
@@ -160,11 +143,35 @@ void Device::Close()
 		mFrameBuffer = NULL;
 	}
 
-	if(mDrawBoard!=NULL)
+	if (mDrawBoard != NULL)
 		mDrawBoard->Close();
 
 	delete mDrawBoard;
 	delete mTransform;
+}
+
+void Device::Sampling(Vertex& vertex) const
+{
+	if (mTextureBuffer == NULL || IsTextureEnabled( ) == false )
+		return;
+
+	Vector2 uv = vertex.mTextureUV;
+	float z = 1.0f / vertex.mReciprocalOfZ;
+	int x = (int)( uv.x * z * (mTextureHeight - 1) );
+	int y = (int)( uv.y * z * (mTextureWidth - 1) );
+
+	y = y >= mTextureWidth ? (mTextureWidth - 1) : y;
+	y = y < 0 ? 0 : y;
+
+	x = x >= mTextureHeight ? (mTextureHeight - 1) : x;
+	x = x < 0 ? 0 : x;
+
+	int color = mTextureBuffer[x][y];
+
+	vertex.mColor.r = GetRValue(color);
+	vertex.mColor.g = GetGValue(color);
+	vertex.mColor.b = GetBValue(color);
+	vertex.mColor.a = 1.0f;
 }
 
 void Device::DrawPoint(const Vector3& point, const Color& color) const
@@ -177,9 +184,6 @@ void Device::DrawPoint(const Vector3& point, const Color& color) const
 	if (x >= mWidth || x < 0 || y < 0 || y >= mHeight)
 		return;
 
-	// Éî¶È²âÊÔ
-	//Stream::PrintVector3(Vector3(point.z, point.z, point.z), "point");
-	//Stream::PrintVector3(Vector3(mZBuffer[y * mWidth + x], mZBuffer[y * mWidth + x], mZBuffer[y * mWidth + x]), "zbuff");
 	if (point.z > mZBuffer[y * mWidth + x])
 		return;
 	else
@@ -288,15 +292,6 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 	if (CheckBackCull(newv1, newv2, newv3))
 		return;
 
-	//newv1.mTextureUV.x = 0.0f;
-	//newv1.mTextureUV.y = 1.0f;
-
-	//newv2.mTextureUV.x = 1.0f;
-	//newv2.mTextureUV.y = 1.0f;
-
-	//newv3.mTextureUV.x = 1.0f;
-	//newv3.mTextureUV.y = 0.0f;
-
 	std::vector<Triangle> triangles = FrustumCulling(newv1, newv2, newv3);
 
 	for (int i = 0; i < triangles.size(); i++)
@@ -359,6 +354,7 @@ std::vector<Vertex> Device::Interpolate(const Vertex& v1, const Vertex& v2) cons
 	{
 		Vertex vertex = Vertex::VertexLerp(topv, bottomv, (float)(i - top) / (float)(bottom - top));
 		vertex.mPos.y = i;
+		vertex.mPos.x = (int)vertex.mPos.x;
 		values.push_back(vertex);
 	}
 
@@ -376,8 +372,8 @@ void Device::FillTriangleHelper(Vertex v1, Vertex v2, Vertex v3) const
 	if (v2.mPos.y > v3.mPos.y)
 		SwapVertex(v2, v3);
 
-	std::vector<Vertex> shortside1 = Interpolate(v1, v2);
 	std::vector<Vertex> shortside2 = Interpolate(v2, v3);
+	std::vector<Vertex> shortside1 = Interpolate(v1, v2);
 	std::vector<Vertex> longsides = Interpolate(v1, v3);
 
 	if (longsides.size() == 0)
@@ -393,18 +389,25 @@ void Device::FillTriangleHelper(Vertex v1, Vertex v2, Vertex v3) const
 	int halfsize = shortside1.size() / 2;
 	std::vector<Vertex>& leftp = shortside1.at(halfsize).mPos.x < longsides.at(halfsize).mPos.x ? shortside1 : longsides;
 	std::vector<Vertex>& rightp = shortside1.at(halfsize).mPos.x > longsides.at(halfsize).mPos.x ? shortside1 : longsides;
+
+	Vertex& left = leftp.at(leftp.size()-1);
+	Vertex& right = rightp.at(rightp.size()-1);
+
 	for (int i = 0; i < leftp.size(); i++)
 	{
 		Vertex& left = leftp.at(i);
 		Vertex& right = rightp.at(i);
-		//Stream::PrintVector2(Vector2((int)left.mPos.x, (int)left.mPos.y), "left");
-		//Stream::PrintVector2(Vector2((int)right.mPos.x, (int)right.mPos.y), "right");
 
-		for (int j = left.mPos.x; j < right.mPos.x; j++)
+		int leftx = left.mPos.x;
+		int rightx = right.mPos.x;
+
+		for (int j = leftx; j <rightx; j++)
 		{
 			Vertex vertex = Vertex::VertexLerp(left, right, (float)(j - left.mPos.x) / (float)(right.mPos.x - left.mPos.x));
 			vertex.mPos.x = j;
+			vertex.mPos.y = right.mPos.y;
 			Sampling(vertex);
+
 			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z), vertex.mColor);
 		}
 	}

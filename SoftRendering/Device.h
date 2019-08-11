@@ -97,6 +97,7 @@ public:
 	void InitPlane();
 	void InitLight();
 	void LoadImageBuffer(std::string resname);
+	void DrawImageBuffer() const;
 	void Sampling(Vertex& vertex) const;
 	void ClearBuffer();
 	void Close();
