@@ -6,7 +6,7 @@ Device* device = NULL;
 
 void DrawTriangle()
 {
-	Vertex v1, v2, v3;
+	Vertex v1, v2, v3, v4;
 	v1.mPos = Vector4( 100.0f, 0.0f, 0.0f, 1.0f );
 	v1.mColor = Color( 255.0f, 0.0f, 0.0f, 1.0f );
 	v1.mTextureUV = Vector2(1.0f, 1.0f);
@@ -15,9 +15,17 @@ void DrawTriangle()
 	v2.mColor = Color( 0.0f, 255.0f, 0.0f, 1.0f );
 	v2.mTextureUV = Vector2(0.0f,1.0f);
 
-	v3.mPos = Vector4( 50.0f, 100.0f, 50.0f, 1.0f );
+	//v3.mPos = Vector4( 50.0f, 100.0f, 50.0f, 1.0f );
+	//v3.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
+	//v3.mTextureUV = Vector2(0.5f, 0.0f);
+
+	v3.mPos = Vector4( 100.0f, 100.0f, 0.0f, 1.0f );
 	v3.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
-	v3.mTextureUV = Vector2(0.5f, 0.0f);
+	v3.mTextureUV = Vector2(1.0f, 0.0f);
+
+	v4.mPos = Vector4(0.0f, 100.0f, 100.0f, 1.0f);
+	v4.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
+	v4.mTextureUV = Vector2(0.0f, 0.0f);
 
 	//Vertex v4, v5, v6;
 	//v4.mPos = Vector4(80.0f, 0.0f, 0.0f, 1.0f);
@@ -35,7 +43,8 @@ void DrawTriangle()
 	//v3.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
 
 	//device->DrawTriangle(v1, v2, v3);
-	device->FillTriangle(v1, v2, v3);
+	device->FillQuadrangle(v1, v2, v4, v3);
+	//device->FillTriangle(v1, v2, v3);
 	//device->FillTriangle(v4, v5, v6);
 }
 
@@ -121,6 +130,8 @@ int main()
 	device = new Device();
 	device->Init(800, 600);
 	device->EnableTexture(true);
+	device->SetDrawObject(1);
+	device->LoadImageBuffer("newt.bmp");
 	while (true)
 	{
 		if (device->GetDrawBoard( )->IsKeyDown(VK_ESCAPE))

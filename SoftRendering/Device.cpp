@@ -42,7 +42,6 @@ void Device::Init(int w, int h)
 	InitPlane();
 	InitLight();
 
-	mDrawObject = 2;
 	LoadImageBuffer("test1.bmp");
 }
 
@@ -225,63 +224,6 @@ void Device::DrawLine(const Vertex& start, const Vertex& end) const
 	}
 }
 
-std::vector<int> Device::Interpolate(int i0, int d0, int i1, int d1) const
-{
-	std::vector<int> values;
-	if (i0 == i1)
-	{
-		values.push_back(d0);
-		return values;
-	}
-
-	int a = (d1 - d0) / (i1 - i0);
-	int d = d0;
-	for (int i = i0; i <= i1; i++)
-	{
-		values.push_back(d0);
-		d += a;
-	}
-}
-
-void Device::DrawLineWithInterpolation(const Vertex& start, const Vertex& end) const
-{
-	Vector4 sp = start.mPos;
-	Vector4 ep = end.mPos;
-
-	float dx = abs(ep.x - sp.x);
-	float dy = abs(ep.y - sp.y);
-
-	if (dx > dy)
-	{
-		const Vertex& left = (ep.x > sp.x) ? start : end;
-		const Vertex& right = (ep.x > sp.x) ? end : start;
-
-		std::vector<int> yvalues = Interpolate((int)left.mPos.x, (int)left.mPos.y, (int)right.mPos.x, (int)right.mPos.x);
-		for (int i = left.mPos.x; i < right.mPos.x; i++)
-		{
-			float lerp = (i - left.mPos.x) / (right.mPos.x - left.mPos.x);
-			Vertex vertex = Vertex::VertexLerp(left, right, lerp);
-			Sampling(vertex);
-			vertex.mPos.y = yvalues[i - (int)left.mPos.x];
-			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z), vertex.mColor);
-		}
-	}
-	else
-	{
-		const Vertex& down = (ep.y > sp.y) ? start : end;
-		const Vertex& up = (ep.y > sp.y) ? end : start;
-		std::vector<int> xvalues = Interpolate((int)down.mPos.x, (int)down.mPos.y, (int)up.mPos.x, (int)up.mPos.x);
-		for (int i = down.mPos.y; i < up.mPos.y; i++)
-		{
-			float lerp = (i - down.mPos.y) / (up.mPos.y - down.mPos.y);
-			Vertex vertex = Vertex::VertexLerp(down, up, lerp);
-			Sampling(vertex);
-			vertex.mPos.x = xvalues[i - (int)down.mPos.y];
-			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z), vertex.mColor);
-		}
-	}
-}
-
 void Device::DrawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) const
 {
 	Vertex newv1 = v1;
@@ -346,15 +288,14 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 	if (CheckBackCull(newv1, newv2, newv3))
 		return;
 
-	newv1.mTextureUV.x = 0.0f;
-	newv1.mTextureUV.y = 1.0f;
+	//newv1.mTextureUV.x = 0.0f;
+	//newv1.mTextureUV.y = 1.0f;
 
-	newv2.mTextureUV.x = 1.0f;
-	newv2.mTextureUV.y = 1.0f;
+	//newv2.mTextureUV.x = 1.0f;
+	//newv2.mTextureUV.y = 1.0f;
 
-	newv3.mTextureUV.x = 1.0f;
-	newv3.mTextureUV.y = 0.0f;
-
+	//newv3.mTextureUV.x = 1.0f;
+	//newv3.mTextureUV.y = 0.0f;
 
 	std::vector<Triangle> triangles = FrustumCulling(newv1, newv2, newv3);
 
@@ -384,118 +325,87 @@ void Device::FillTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) 
 	}
 }
 
-void Device::FillTriangleHelper1(Vertex& newv1, Vertex& newv2, Vertex& newv3) const
+void SwapVertex(Vertex& v1, Vertex& v2)
 {
-	int y1 = (int)(newv3.mPos.y + 0.5f);
-	int y2 = (int)(newv1.mPos.y + 0.5f);
+	Vertex tmp = v1;
+	v1 = v2;
+	v2 = tmp;
+}
+
+std::vector<Vertex> Device::Interpolate(const Vertex& v1, const Vertex& v2) const
+{
+	std::vector<Vertex> values;
+	if (v1.mPos.y == v2.mPos.y)
+	{
+		values.push_back(v1);
+		return values;
+	}
+
+	const Vertex& topv = v1.mPos.y < v2.mPos.y ? v1 : v2;
+	const Vertex& bottomv = v1.mPos.y > v2.mPos.y ? v1 : v2;
+
+	int y1 = (int)(v1.mPos.y + 0.5f);
+	int y2 = (int)(v2.mPos.y + 0.5f);
 
 	int top = min(y1, y2);
 	int bottom = max(y1, y2);
 
-	if (top >= bottom) return;
+	assert(top <= bottom);
 
 	int limittop = max(0, top);
 	int limitbottom = min(mHeight - 1, bottom);
 
-	bool up = newv3.mPos.y < newv1.mPos.y;
 	for (int i = limittop; i <= limitbottom; i++)
 	{
-		Vertex vl, vr;
-		if (up)
-		{
-			float lerp = (float)(i - top) / (float)(bottom - top);
-			vl = Vertex::VertexLerp(newv3, newv1, lerp);
-			vr = Vertex::VertexLerp(newv3, newv2, lerp);
-		}
-		else
-		{
-			float lerp = (float)(bottom - i) / (float)(bottom - top);
-			vl = Vertex::VertexLerp(newv1, newv3, lerp);
-			vr = Vertex::VertexLerp(newv2, newv3, lerp);
-		}
-
-		vl.mPos.y = vr.mPos.y = i;
-
-		DrawLine(vl, vr);
+		Vertex vertex = Vertex::VertexLerp(topv, bottomv, (float)(i - top) / (float)(bottom - top));
+		vertex.mPos.y = i;
+		values.push_back(vertex);
 	}
+
+	return values;
 }
 
-void Device::FillTriangleHelper(Vertex& newv1, Vertex& newv2, Vertex& newv3) const
+void Device::FillTriangleHelper(Vertex v1, Vertex v2, Vertex v3) const
 {
-	if (newv1.mPos.y == newv2.mPos.y)
-	{
-		FillTriangleHelper1(newv1, newv2, newv3);
-	}
-	else if (newv1.mPos.y == newv3.mPos.y)
-	{
-		FillTriangleHelper1(newv1, newv3, newv2);
-	}
-	else if (newv2.mPos.y == newv3.mPos.y)
-	{
-		FillTriangleHelper1(newv2, newv3, newv1);
-	}
-	else
-	{
-		Vertex middle = newv1;
-		Vertex top = newv2;
-		Vertex bottom = newv3;
+	if (v1.mPos.y > v2.mPos.y)
+		SwapVertex(v1, v2);
 
-		float y = min(newv1.mPos.y, newv2.mPos.y);
-		y = max(y, newv3.mPos.y);
+	if (v1.mPos.y > v3.mPos.y)
+		SwapVertex(v1, v3);
 
-		if (y == newv2.mPos.y)
+	if (v2.mPos.y > v3.mPos.y)
+		SwapVertex(v2, v3);
+
+	std::vector<Vertex> longsides = Interpolate(v1, v3);
+	std::vector<Vertex> shortside1 = Interpolate(v1, v2);
+	std::vector<Vertex> shortside2 = Interpolate(v2, v3);
+
+	if (longsides.size() == 0)
+		return;
+
+	if (shortside2.size()>=1)
+		shortside2.pop_back();
+	shortside1.insert(shortside1.end(), shortside2.begin(), shortside2.end());
+
+	if (shortside1.size() != longsides.size())
+		return;
+
+	int halfsize = shortside1.size() / 2;
+	std::vector<Vertex>& leftp = shortside1.at(halfsize).mPos.x < longsides.at(halfsize).mPos.x ? shortside1 : longsides;
+	std::vector<Vertex>& rightp = shortside1.at(halfsize).mPos.x > longsides.at(halfsize).mPos.x ? shortside1 : longsides;
+	for (int i = 0; i < leftp.size(); i++)
+	{
+		Vertex& left = leftp.at(i);
+		Vertex& right = rightp.at(i);
+
+		for (int j = left.mPos.x; j < right.mPos.x; j++)
 		{
-			middle = newv2;
-			if (newv1.mPos.y > newv3.mPos.y)
-			{
-				top = newv1;
-				bottom = newv3;
-			}
-			else
-			{
-				top = newv3;
-				bottom = newv1;
-			}
+			Vertex vertex = Vertex::VertexLerp(left, right, (float)(j - left.mPos.x) / (float)(right.mPos.x - left.mPos.x));
+			vertex.mPos.x = j;
+			Sampling(vertex);
+			DrawPoint(Vector3(vertex.mPos.x, vertex.mPos.y, vertex.mPos.z), vertex.mColor);
 		}
-		else if (y == newv3.mPos.y)
-		{
-			middle = newv3;
-			if (newv1.mPos.y > newv2.mPos.y)
-			{
-				top = newv1;
-				bottom = newv2;
-			}
-			else
-			{
-				top = newv2;
-				bottom = newv1;
-			}
-		}
-		else
-		{
-			if (newv2.mPos.y > newv3.mPos.y)
-			{
-				top = newv2;
-				bottom = newv3;
-			}
-			else
-			{
-				top = newv3;
-				bottom = newv2;
-			}
-		}
-
-		float lerp = (float)(middle.mPos.y - bottom.mPos.y) / (float)(top.mPos.y - bottom.mPos.y);
-		Vertex mp = Vertex::VertexLerp(bottom, top, lerp);
-
-		FillTriangleHelper(top, middle, mp);
-		FillTriangleHelper(middle, bottom, mp);
 	}
-}
-
-void Device::DrawFillTriangle(Vertex& v1, Vertex& v2, Vertex& v3) const
-{
-	
 }
 
 void Device::DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const
@@ -506,8 +416,8 @@ void Device::DrawQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3
 
 void Device::FillQuadrangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, const Vertex& v4) const
 {
-	FillTriangle(v1, v2, v3);
-	//FillTriangle(v1, v3, v4);
+	//FillTriangle(v1, v2, v3);
+	FillTriangle(v1, v3, v4);
 }
 
 std::vector<Triangle> Device::FrustumCullingHelper(const vector<Triangle>& triangles, const Vector4& plane) const

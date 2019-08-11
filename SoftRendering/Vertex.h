@@ -1,6 +1,7 @@
 #pragma once
 #include"Vector.h"
 #include"Color.h"
+#include "Stream.h"
 #include<vector>
 
 class Vertex
@@ -37,6 +38,14 @@ public:
 		v.mTextureUV.x = v1.mTextureUV.x + lerp * (v2.mTextureUV.x - v1.mTextureUV.x);
 		v.mTextureUV.y = v1.mTextureUV.y + lerp * (v2.mTextureUV.y - v1.mTextureUV.y);
 		v.mReciprocalOfZ = v1.mReciprocalOfZ + lerp * (v2.mReciprocalOfZ - v1.mReciprocalOfZ);
+
+		Vector2 uv = v.mTextureUV;
+		float z = 1.0f / v.mReciprocalOfZ;
+		int x = (int)(uv.x * z * (218 - 1));
+		int y = (int)(uv.y * z * (199 - 1));
+
+		//Stream::PrintVector2(Vector2(y, x), "UVPosition");
+		//Stream::PrintVector4(v.mPos, "vertext Position");
 
 		return v;
 	}
