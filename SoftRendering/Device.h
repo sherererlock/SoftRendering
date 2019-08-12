@@ -25,6 +25,9 @@
 
 #define _COMBINE_COLOR( a, r, g, b ) ( (a) << 24 | (r) << 16 | (g) << 8 | (b) )
 
+#define Round(x) (int((x)+0.5f))
+#define PI 3.1415926
+
 class Device
 {
 public:
@@ -117,4 +120,8 @@ public:
 	void MoveCameraForwardOrBackward(float dis);
 	void MoveCameraRightOrLeft(float dis);
 	void MoveCameraUpOrDown(float dis);
+	void RotateCamera(const Matrix4D& mat);
+	void RotateCameraAroundY(float radian);
+	void RotateCameraAroundX(float radian);
+	void RotateCameraAround(const Vector3& vec, float radian);
 };

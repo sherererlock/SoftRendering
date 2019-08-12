@@ -196,4 +196,70 @@ public:
 		vout.z = x * m.mMat[0][2] + y * m.mMat[1][2] + z * m.mMat[2][2] + w * m.mMat[3][2];
 		vout.w = x * m.mMat[0][3] + y * m.mMat[1][3] + z * m.mMat[2][3] + w * m.mMat[3][3];
 	}
+
+	Matrix4D& RotationX(float r)
+	{
+		float sinvalue = ::sin(r), cosvalue = ::cos(r);
+
+		mMat[0][0] = 1.0f; mMat[0][1] = 0.0f;			mMat[0][2] = 0.0f;		mMat[0][3] = 0.0f;
+		mMat[1][0] = 0.0f; mMat[1][1] = cosvalue;		mMat[1][2] = sinvalue; mMat[1][3] = 0.0f;
+		mMat[2][0] = 0.0f; mMat[2][1] = -sinvalue;		mMat[2][2] = cosvalue; mMat[2][3] = 0.0f;
+		mMat[3][0] = 0.0f; mMat[3][1] = 0.0f;			mMat[3][2] = 0.0f;		mMat[3][3] = 1.0f;
+
+		return *this;
+	}
+
+	Matrix4D& RotationY(float r)
+	{
+		float sinvalue = ::sin(r), cosvalue = ::cos(r);
+
+		mMat[0][0] = cosvalue;  mMat[0][1] = 0.0f; mMat[0][2] = -sinvalue;   mMat[0][3] = 0.0f;
+		mMat[1][0] = 0.0f;		mMat[1][1] = 1.0f; mMat[1][2] = 0.0f;		mMat[1][3] = 0.0f;
+		mMat[2][0] = sinvalue;	mMat[2][1] = 0.0f; mMat[2][2] = cosvalue;	mMat[2][3] = 0.0f;
+		mMat[3][0] = 0.0f;		mMat[3][1] = 0.0f; mMat[3][2] = 0.0f;		mMat[3][3] = 1.0f;
+
+		return *this;
+	}
+
+	Matrix4D& RotationZ(float r)
+	{
+		float sinvalue = ::sin(r), cosvalue = ::cos(r);
+
+		mMat[0][0] = cosvalue;	mMat[0][1] = -sinvalue;	mMat[0][2] = 0.0f; mMat[0][3] = 0.0f;
+		mMat[1][0] = sinvalue;	mMat[1][1] = cosvalue;	mMat[1][2] = 0.0f; mMat[1][3] = 0.0f;
+		mMat[2][0] = 0.0f;		mMat[2][1] = 0.0f;		mMat[2][2] = 1.0f; mMat[2][3] = 0.0f;
+		mMat[3][0] = 0.0f;		mMat[3][1] = 0.0f;		mMat[3][2] = 0.0f; mMat[3][3] = 1.0f;
+
+		return *this;
+	}
+
+	Matrix4D& Rotation(const Vector3& a, float r)
+	{
+		float sinvalue = ::sin(r), cosvalue = ::cos(r), cosreverse = 1.0f - cosvalue;
+
+		Vector3 n(a);
+		n.Normorlize();
+
+		mMat[0][0] = cosreverse * n.x * n.x + cosvalue;
+		mMat[0][1] = cosreverse * n.x * n.y + sinvalue * n.z;
+		mMat[0][2] = cosreverse * n.x * n.z - sinvalue * n.y;
+		mMat[0][3] = 0.0f;
+
+		mMat[1][0] = cosreverse * n.x * n.y - sinvalue * n.z;
+		mMat[1][1] = cosreverse * n.y * n.y + cosvalue;
+		mMat[1][2] = cosreverse * n.y * n.z + sinvalue * n.x;
+		mMat[1][3] = 0.0f;
+
+		mMat[2][0] = cosreverse * n.x * n.z + sinvalue * n.y;
+		mMat[2][1] = cosreverse * n.y * n.z - sinvalue * n.x;
+		mMat[2][2] = cosreverse * n.z * n.z + cosvalue;
+		mMat[2][3] = 0.0f;
+
+		mMat[3][0] = 0.0f;
+		mMat[3][1] = 0.0f;
+		mMat[3][2] = 0.0f;
+		mMat[3][3] = 1.0f;
+
+		return *this;
+	}
 };

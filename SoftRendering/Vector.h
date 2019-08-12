@@ -70,7 +70,7 @@ public:
 
 	inline float Length() const
 	{
-		return	::sqrt(x * x + y * y + z * z);
+		return ::sqrt(x * x + y * y + z * z);
 	}
 
 	inline Vector3& Normorlize()

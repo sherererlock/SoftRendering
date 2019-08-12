@@ -1,14 +1,9 @@
-
 #include<math.h>
 #include<iostream>
 #include"Device.h"
 #include"DrawBoard.h"
 #include"Stream.h"
 #include"ClippingPlane.h"
-
-
-#define Round(x) (int((x)+0.5f))
-#define PI 3.1415926
 
 void Device::Init(int w, int h)
 {
@@ -330,7 +325,11 @@ void SwapVertex(Vertex& v1, Vertex& v2)
 std::vector<Vertex> Device::Interpolate(const Vertex& v1, const Vertex& v2) const
 {
 	std::vector<Vertex> values;
-	if (v1.mPos.y == v2.mPos.y)
+
+	int y1 = (int)(v1.mPos.y + 0.5f);
+	int y2 = (int)(v2.mPos.y + 0.5f);
+
+	if (y1 == y2)
 	{
 		values.push_back(v1);
 		return values;
@@ -338,9 +337,6 @@ std::vector<Vertex> Device::Interpolate(const Vertex& v1, const Vertex& v2) cons
 
 	const Vertex& topv = v1.mPos.y < v2.mPos.y ? v1 : v2;
 	const Vertex& bottomv = v1.mPos.y > v2.mPos.y ? v1 : v2;
-
-	int y1 = (int)(v1.mPos.y);
-	int y2 = (int)(v2.mPos.y);
 
 	int top = min(y1, y2);
 	int bottom = max(y1, y2);
@@ -537,4 +533,50 @@ void Device::MoveCameraUpOrDown(float dis)
 
 	mTransform->SetView(mCamera);
 	mTransform->UpdateTransform();
+}
+
+void Device::RotateCamera(const Matrix4D& mat)
+{
+	Vector3 forward = mCamera.mLook - mCamera.mEye;
+	float len = forward.Length();
+
+	Vector4 newforward(forward.x, forward.y, forward.z, 1.0f);
+	Matrix4D::MulRight(newforward, newforward, mat);
+	newforward.Normorlize();
+	newforward.x *= len;
+	newforward.y *= len;
+	newforward.z *= len;
+
+	mCamera.mEye = mCamera.mLook - Vector3(newforward.x, newforward.y, newforward.z);
+
+	Vector4 newup(mCamera.mUp.x, mCamera.mUp.y, mCamera.mUp.z, 1.0f);
+	Matrix4D::MulRight(newup, newup, mat);
+	mCamera.mUp = Vector3(newup.x, newup.y, newup.z);
+
+	mTransform->SetView(mCamera);
+	mTransform->UpdateTransform();
+}
+
+void Device::RotateCameraAroundY(float radian)
+{
+	Matrix4D mat;
+	mat.RotationY(radian);
+
+	RotateCamera(mat);
+}
+
+void Device::RotateCameraAroundX(float radian)
+{
+	Matrix4D mat;
+	mat.RotationX(radian);
+
+	RotateCamera(mat);
+}
+
+void Device::RotateCameraAround(const Vector3& vec, float radian)
+{
+	Matrix4D mat;
+	mat.Rotation(vec, radian);
+
+	RotateCamera(mat);
 }
