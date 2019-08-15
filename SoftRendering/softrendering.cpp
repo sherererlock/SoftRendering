@@ -26,10 +26,12 @@ void DrawTriangle()
 	//v4.mPos = Vector4(0.0f, 100.0f, 100.0f, 1.0f);
 	//v4.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
 	//v4.mTextureUV = Vector2(0.0f, 0.0f);
+	if (device->IsWireframe())
+		device->DrawTriangle(v1, v2, v3);
 
-	//device->DrawTriangle(v1, v2, v3);
 	//device->FillQuadrangle(v1, v2, v4, v3);
-	device->FillTriangle(v1, v2, v3);
+	if (device->IsWireframe() == false)
+		device->FillTriangle(v1, v2, v3);
 	//device->FillTriangle(v4, v5, v6);
 }
 
@@ -95,19 +97,25 @@ void DrawHexahedron()
 	v8.mNormal = plane38 + plane57 + plane18;
 	v8.mNormal.Normorlize();
 
-	device->DrawQuadrangle(v2, v1, v4, v3);
-	device->DrawQuadrangle(v1, v2, v6, v5);
-	device->DrawQuadrangle(v4, v1, v5, v8);
-	device->DrawQuadrangle(v2, v3, v7, v6);
-	device->DrawQuadrangle(v3, v4, v8, v7);
-	device->DrawQuadrangle(v5, v6, v7, v8);
+	if (device->IsWireframe())
+	{
+		device->DrawQuadrangle(v2, v1, v4, v3);
+		device->DrawQuadrangle(v1, v2, v6, v5);
+		device->DrawQuadrangle(v4, v1, v5, v8);
+		device->DrawQuadrangle(v2, v3, v7, v6);
+		device->DrawQuadrangle(v3, v4, v8, v7);
+		device->DrawQuadrangle(v5, v6, v7, v8);
+	}
 
-	//device->FillQuadrangle(v2, v1, v4, v3);
-	//device->FillQuadrangle(v1, v2, v6, v5);
-	//device->FillQuadrangle(v4, v1, v5, v8);
-	//device->FillQuadrangle(v2, v3, v7, v6);
-	//device->FillQuadrangle(v3, v4, v8, v7);
-	//device->FillQuadrangle(v5, v6, v7, v8);
+	if (device->IsWireframe() == false)
+	{
+		device->FillQuadrangle(v2, v1, v4, v3);
+		device->FillQuadrangle(v1, v2, v6, v5);
+		device->FillQuadrangle(v4, v1, v5, v8);
+		device->FillQuadrangle(v2, v3, v7, v6);
+		device->FillQuadrangle(v3, v4, v8, v7);
+		device->FillQuadrangle(v5, v6, v7, v8);
+	}
 }
 
 int main()
@@ -115,7 +123,7 @@ int main()
 	device = new Device();
 	device->Init(800, 600);
 	device->EnableTexture(false);
-	device->SetDrawObject(2);
+	device->SetDrawObject(1);
 	device->LoadImageBuffer("newt.bmp");
 	while (true)
 	{
@@ -162,45 +170,52 @@ int main()
 		{
 			device->MoveCameraUpOrDown(-0.5f);
 		}
-		// Lighting key number 1
+		// Lighting key number 1,2
 		else if (device->GetDrawBoard()->IsKeyDown(1 + 48))
 		{
-			bool light = device->IsLightingEnabled();
-			device->EnableLight(!light);
+			device->EnableLight(true);
 		}
-		// Texture key number 2
 		else if (device->GetDrawBoard()->IsKeyDown(2 + 48))
 		{
-			bool texture = device->IsTextureEnabled();
-			device->EnableTexture(!texture);
+			device->EnableLight(false);
 		}
-		// Draw Triangle
-		else if ( device->GetDrawBoard()->IsKeyDown(3+48))
+		// Texture key number 3,4
+		else if (device->GetDrawBoard()->IsKeyDown(3 + 48))
 		{
-			device->LoadImageBuffer("affair.bmp");
-			device->SetDrawObject(1);
+			if (device->GetDrawObject() == 1)
+				device->EnableTexture(true);
 		}
-		// Draw Cube
 		else if (device->GetDrawBoard()->IsKeyDown(4 + 48))
 		{
-			device->LoadImageBuffer("test1.bmp");
-			device->EnableTexture(true);
+			device->EnableTexture(false);
+		}
+		// wireframe 5,6
+		else if (device->GetDrawBoard()->IsKeyDown(5 + 48))
+		{
+			device->EnableWireframe(true);
+		}
+		else if (device->GetDrawBoard()->IsKeyDown(6 + 48))
+		{
+			device->EnableWireframe(false);
+		}
+		// Draw Triangle 7
+		else if ( device->GetDrawBoard()->IsKeyDown(7+48))
+		{
+			device->SetDrawObject(1);
+		}
+		// Draw Cube 8
+		else if (device->GetDrawBoard()->IsKeyDown(7 + 48))
+		{
+			device->EnableTexture(false);
 			device->SetDrawObject(2);
 		}
 
 		device->ClearBuffer();
 
-		//device->RotateCameraAroundX(-0.002f);
-		//device->DrawImageBuffer();
-
 		if (device->GetDrawObject( ) == 1)
 			DrawTriangle();
 		else if (device->GetDrawObject() == 2)
 			DrawHexahedron();
-
-		//device->RotateCameraAroundY(-0.002f);
-
-		device->RotateCameraAround(Vector3(45, 100, 45),-0.002f);
 
 		device->GetDrawBoard()->Update();
 	}

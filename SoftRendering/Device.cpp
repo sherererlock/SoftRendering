@@ -147,7 +147,7 @@ void Device::Close()
 
 void Device::Sampling(Vertex& vertex) const
 {
-	if (mTextureBuffer == NULL || IsTextureEnabled( ) == false )
+	if (mTextureBuffer == NULL || IsTextureEnabled( ) == false || IsWireframe() )
 		return;
 
 	Vector2 uv = vertex.mTextureUV;

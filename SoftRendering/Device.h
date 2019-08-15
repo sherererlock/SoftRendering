@@ -35,6 +35,7 @@ public:
 	{
 		_Lighting	= 0x00000001,
 		_Texture	= 0x00000002,
+		_Wireframe	= 0x00000004,
 	};
 
 private:
@@ -90,6 +91,15 @@ public:
 		{ return (mDrawMode & _Texture) != 0; }
 	inline void EnableTexture(bool enable)
 		{ mDrawMode = enable ? (mDrawMode | _Texture) : (mDrawMode & ~_Texture); }
+
+	inline bool IsWireframe() const
+	{
+		return (mDrawMode & _Wireframe) != 0;
+	}
+	inline void EnableWireframe(bool enable)
+	{
+		mDrawMode = enable ? (mDrawMode | _Wireframe) : (mDrawMode & ~_Wireframe);
+	}
 
 	inline int GetDrawObject()
 		{ return mDrawObject; }
