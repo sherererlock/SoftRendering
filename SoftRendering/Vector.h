@@ -17,7 +17,7 @@ public:
 		return ::sqrt( x * x + y * y );
 	}
 
-	inline Vector2& Normorlize( )
+	inline Vector2& Normalize( )
 	{
 		float length = Length( );
 		assert( length > 0 );
@@ -73,7 +73,7 @@ public:
 		return ::sqrt(x * x + y * y + z * z);
 	}
 
-	inline Vector3& Normorlize()
+	inline Vector3& Normalize()
 	{
 		float length = Length();
 		assert(length > 0);
@@ -130,7 +130,7 @@ public:
 		return	(float)::sqrt( x * x + y * y + z * z + w * w );
 	}
 
-	inline Vector4& Normorlize()
+	inline Vector4& Normalize()
 	{
 		float length = Length();
 		assert(length > 0);

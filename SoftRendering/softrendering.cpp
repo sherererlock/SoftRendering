@@ -80,22 +80,22 @@ void DrawHexahedron()
 	plane57 = Vector4(0.0f, 1.0f, 0.0f, 1.0f);
 
 	v1.mNormal = plane16 + plane18 + plane13;
-	v1.mNormal.Normorlize();
+	v1.mNormal.Normalize();
 	v2.mNormal = plane27 + plane16 + plane13;
-	v2.mNormal.Normorlize();
+	v2.mNormal.Normalize();
 	v3.mNormal = plane27 + plane38 + plane13;
-	v3.mNormal.Normorlize();
+	v3.mNormal.Normalize();
 	v4.mNormal = plane38 + plane18 + plane13;
-	v4.mNormal.Normorlize();
+	v4.mNormal.Normalize();
 
 	v5.mNormal = plane57 + plane18 + plane13;
-	v5.mNormal.Normorlize();
+	v5.mNormal.Normalize();
 	v6.mNormal = plane16 + plane57 + plane27;
-	v6.mNormal.Normorlize();
+	v6.mNormal.Normalize();
 	v7.mNormal = plane27 + plane57 + plane18;
-	v7.mNormal.Normorlize();
+	v7.mNormal.Normalize();
 	v8.mNormal = plane38 + plane57 + plane18;
-	v8.mNormal.Normorlize();
+	v8.mNormal.Normalize();
 
 	if (device->IsWireframe())
 	{
@@ -204,7 +204,7 @@ int main()
 			device->SetDrawObject(1);
 		}
 		// Draw Cube 8
-		else if (device->GetDrawBoard()->IsKeyDown(7 + 48))
+		else if (device->GetDrawBoard()->IsKeyDown(8 + 48))
 		{
 			device->EnableTexture(false);
 			device->SetDrawObject(2);

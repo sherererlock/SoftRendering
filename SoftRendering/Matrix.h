@@ -238,7 +238,7 @@ public:
 		float sinvalue = ::sin(r), cosvalue = ::cos(r), cosreverse = 1.0f - cosvalue;
 
 		Vector3 n(a);
-		n.Normorlize();
+		n.Normalize();
 
 		mMat[0][0] = cosreverse * n.x * n.x + cosvalue;
 		mMat[0][1] = cosreverse * n.x * n.y + sinvalue * n.z;

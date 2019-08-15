@@ -3,13 +3,13 @@
 
 Matrix4D Camera::LookAt() const
 {
-	Vector3 forward = (mLook - mEye).Normorlize();
+	Vector3 forward = (mLook - mEye).Normalize();
 	Vector3 newup = mUp;
-	newup.Normorlize();
+	newup.Normalize();
 	Vector3 right = Vector3::Cross(newup, forward);
-	right.Normorlize();
+	right.Normalize();
 	Vector3 up = Vector3::Cross(forward, right);
-	up.Normorlize();
+	up.Normalize();
 
 	Matrix4D camToWorld;
 

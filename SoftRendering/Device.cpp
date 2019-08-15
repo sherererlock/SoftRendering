@@ -492,7 +492,7 @@ Vector3 Device::LightShader(const Vertex& vertex, const Light& light) const
 
 void Device::MoveCameraForwardOrBackward(float dis)
 {
-	Vector3 forward = (mCamera.mLook - mCamera.mEye).Normorlize();
+	Vector3 forward = (mCamera.mLook - mCamera.mEye).Normalize();
 	mCamera.mEye = mCamera.mEye + forward * dis;
 	mCamera.mLook = mCamera.mLook + forward * dis;
 
@@ -508,8 +508,8 @@ void Device::MoveCameraForwardOrBackward(float dis)
 
 void Device::MoveCameraRightOrLeft(float dis)
 {
-	Vector3 forward = (mCamera.mLook - mCamera.mEye).Normorlize();
-	Vector3 up = mCamera.mUp.Normorlize();
+	Vector3 forward = (mCamera.mLook - mCamera.mEye).Normalize();
+	Vector3 up = mCamera.mUp.Normalize();
 	Vector3 right = Vector3::Cross(up, forward);
 
 	mCamera.mEye = mCamera.mEye + right * dis;
@@ -521,12 +521,12 @@ void Device::MoveCameraRightOrLeft(float dis)
 
 void Device::MoveCameraUpOrDown(float dis)
 {
-	Vector3 forward = (mCamera.mLook - mCamera.mEye).Normorlize();
-	Vector3 nup = mCamera.mUp.Normorlize();
+	Vector3 forward = (mCamera.mLook - mCamera.mEye).Normalize();
+	Vector3 nup = mCamera.mUp.Normalize();
 	Vector3 right = Vector3::Cross(nup, forward);
-	right.Normorlize();
+	right.Normalize();
 	Vector3 up = Vector3::Cross(forward, right);
-	up.Normorlize();
+	up.Normalize();
 
 	mCamera.mEye = mCamera.mEye + up * dis;
 	mCamera.mLook = mCamera.mLook + up * dis;
@@ -542,7 +542,7 @@ void Device::RotateCamera(const Matrix4D& mat)
 
 	Vector4 newforward(forward.x, forward.y, forward.z, 1.0f);
 	Matrix4D::MulRight(newforward, newforward, mat);
-	newforward.Normorlize();
+	newforward.Normalize();
 	newforward.x *= len;
 	newforward.y *= len;
 	newforward.z *= len;
