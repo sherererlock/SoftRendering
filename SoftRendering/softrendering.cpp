@@ -19,20 +19,17 @@ void DrawTriangle()
 	v3.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
 	v3.mTextureUV = Vector2(0.5f, 0.0f);
 
-	//v3.mPos = Vector4( 100.0f, 100.0f, 0.0f, 1.0f );
-	//v3.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
-	//v3.mTextureUV = Vector2(1.0f, 0.0f);
+	Vector4 vec1 = v2.mPos - v1.mPos;
+	Vector4 vec2 = v3.mPos - v1.mPos;
+	Vector4 normal = Vector4::Cross(vec1, vec2);
 
-	//v4.mPos = Vector4(0.0f, 100.0f, 100.0f, 1.0f);
-	//v4.mColor = Color(0.0f, 0.0f, 255.0f, 1.0f);
-	//v4.mTextureUV = Vector2(0.0f, 0.0f);
+	v1.mNormal = v2.mNormal = v3.mNormal = normal.Normalize();
+
 	if (device->IsWireframe())
 		device->DrawTriangle(v1, v2, v3);
 
-	//device->FillQuadrangle(v1, v2, v4, v3);
 	if (device->IsWireframe() == false)
 		device->FillTriangle(v1, v2, v3);
-	//device->FillTriangle(v4, v5, v6);
 }
 
 void InitTexture(Vertex &ve, float u, float v)
@@ -124,6 +121,7 @@ int main()
 	device->Init(800, 600);
 	device->EnableTexture(false);
 	device->SetDrawObject(1);
+	device->EnableLight(true);
 	device->LoadImageBuffer("newt.bmp");
 	while (true)
 	{

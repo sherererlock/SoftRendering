@@ -59,11 +59,11 @@ void Device::InitPlane()
 
 void Device::InitLight()
 {
-	mAmbientLight.mIntensity = Vector3(0.5f, 0.5f, 0.5f);
+	mAmbientLight.mIntensity = Vector3(0.0f, 0.0f, 0.0f);
 	mAmbientLight.mType = Light::_Light_Ambient;
 
-	mPointLight.mIntensity = Vector3(1.0f, 1.0f, 1.0f);
-	mPointLight.mPos = Vector4(50.0f, 200.0f, 50.0f, 1.0f);
+	mPointLight.mIntensity = Vector3(0.9f, 0.5f, 0.1f);
+	mPointLight.mPos = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 	mPointLight.mType = Light::_Light_Point;
 
 	mDirectionalLight.mIntensity = Vector3(1.0f, 1.0f, 1.0f);
@@ -462,7 +462,7 @@ void Device::ShaderVertex(Vertex& v1) const
 	if (IsLightingEnabled() == false)
 		return;
 
-	Vector3 intensity = LightShader(v1, mDirectionalLight) + LightShader(v1, mPointLight) + LightShader(v1, mAmbientLight);
+	Vector3 intensity = LightShader(v1, mPointLight);
 	v1.mColor = v1.mColor * intensity;
 
 	v1.mColor.r = v1.mColor.r > 255.0f ? 255.0f : v1.mColor.r;
